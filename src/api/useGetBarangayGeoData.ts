@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 
-function getBargangayGeoData() {
+import type { BarangayGeoJSON } from "../types/map"
+
+function getBargangayGeoData(): Promise<BarangayGeoJSON> {
     return axios.get("/data/barangays.geojson").then((result) => {
         return result.data
     })
