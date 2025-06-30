@@ -1,7 +1,25 @@
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet"
+import Leaflet from "leaflet"
+import { useEffect } from "react"
+import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet"
 
 import "leaflet/dist/leaflet.css"
 import { useGetBarangayGeoData } from "../api/useGetBarangayGeoData"
+
+function FitBoundsToGeoJSON({
+    geojson,
+}: {
+    geojson: GeoJSON.FeatureCollection
+}) {
+    const map = useMap()
+
+    useEffect(() => {
+        const layer = Leaflet.geoJSON(geojson)
+
+        map.fitBounds(layer.getBounds(), { padding: [5, 5] })
+    }, [geojson, map])
+
+    return null
+}
 
 export default function Map() {
     const {
@@ -10,11 +28,16 @@ export default function Map() {
         error: barangaysError,
     } = useGetBarangayGeoData()
 
+    const geoJsonStyle = () => ({
+        color: "#3182ce",
+        weight: 0.75,
+        fillOpacity: 0.2,
+    })
 
     return (
         <MapContainer
-            center={[ 6.74972000, 125.35722000]}
-            zoom={13}
+            center={[6.74972, 125.35722]}
+            zoom={5}
             scrollWheelZoom={true}
             style={{ height: "100vh", width: "100vw" }}
         >
@@ -23,7 +46,10 @@ export default function Map() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {!barangaysLoading && !barangaysError && barangays && (
-                <GeoJSON data={barangays} />
+                <>
+                    <GeoJSON data={barangays} style={geoJsonStyle} />
+                    <FitBoundsToGeoJSON geojson={barangays} />
+                </>
             )}
         </MapContainer>
     )
