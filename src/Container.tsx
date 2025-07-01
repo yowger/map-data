@@ -1,10 +1,13 @@
 import { useState } from "react"
 
 import { useGetBarangayGeoData } from "./api/useGetBarangayGeoData"
+import BarangayDetailView from "./components/BarangayViewDetail"
+import BarangayListView from "./components/BarangayListView"
 import Map from "./map/Map"
 import type { BarangayFeature } from "./types/map"
 
 export default function Container() {
+    const [sidebarView, setSidebarView] = useState<"list" | "detail">("list")
     const [selectedBarangay, setSelectedBarangay] =
         useState<BarangayFeature | null>(null)
 
@@ -24,25 +27,21 @@ export default function Container() {
 
     return (
         <div className="flex h-screen">
-            <aside className=" w-80 p-4 bg-white shadow overflow-y-auto">
-                <h2>Barangays</h2>
-                <ul>
-                    {barangays.features.map((barangay, index) => {
-                        return (
-                            <div key={index}>
-                                <div
-                                    className="flex justify-between"
-                                    onClick={() =>
-                                        setSelectedBarangay(barangay)
-                                    }
-                                >
-                                    <p>{barangay.properties.Brgy_Name}</p>
-                                    <button>View</button>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </ul>
+            <aside className="w-80 bg-white shadow overflow-y-auto p-4">
+                {sidebarView === "list" && (
+                    <BarangayListView
+                        barangays={barangays}
+                        setSelectedBarangay={setSelectedBarangay}
+                        setSidebarView={setSidebarView}
+                    />
+                )}
+
+                {sidebarView === "detail" && selectedBarangay && (
+                    <BarangayDetailView
+                        barangay={selectedBarangay}
+                        onBack={() => setSidebarView("list")}
+                    />
+                )}
             </aside>
 
             <Map barangays={barangays} selectedBarangay={selectedBarangay} />
