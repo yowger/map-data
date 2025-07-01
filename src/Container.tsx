@@ -1,8 +1,10 @@
 import { useState } from "react"
 
 import { useGetBarangayGeoData } from "./api/useGetBarangayGeoData"
+
 import BarangayDetailView from "./components/BarangayViewDetail"
 import BarangayListView from "./components/BarangayListView"
+import { mockReports } from "./data/mock/mockReports"
 import Map from "./map/Map"
 import type { BarangayFeature } from "./types/map"
 
@@ -27,7 +29,7 @@ export default function Container() {
 
     return (
         <div className="flex h-screen">
-            <aside className="w-80 bg-white shadow overflow-y-auto p-4">
+            <aside className="w-96 bg-white shadow overflow-y-auto p-4">
                 {sidebarView === "list" && (
                     <BarangayListView
                         barangays={barangays}
@@ -44,7 +46,11 @@ export default function Container() {
                 )}
             </aside>
 
-            <Map barangays={barangays} selectedBarangay={selectedBarangay} />
+            <Map
+                barangays={barangays}
+                selectedBarangay={selectedBarangay}
+                reports={mockReports}
+            />
         </div>
     )
 }

@@ -1,16 +1,59 @@
 import Leaflet, { type StyleFunction } from "leaflet"
 import { useEffect } from "react"
-import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet"
+import {
+    MapContainer,
+    TileLayer,
+    GeoJSON,
+    useMap,
+    Marker,
+    Popup,
+} from "react-leaflet"
 
 import "leaflet/dist/leaflet.css"
 import type { BarangayFeature, BarangayGeoJSON } from "../types/map"
+import type { MapReport } from "../types/reports"
 
 interface MapProps {
     selectedBarangay: BarangayFeature | null
     barangays: BarangayGeoJSON
+    reports: MapReport[]
 }
 
-export default function Map({ barangays, selectedBarangay }: MapProps) {
+function renderReportMarkers(reports: MapReport[]) {
+    return reports?.map((report) => (
+        <Marker key={report.id} position={[report.lat, report.lng]}>
+            <Popup>
+                <div className="text-sm space-y-1">
+                    <p className="font-medium">
+                        {report.type.replace("_", " ").toUpperCase()}
+                    </p>
+                    <p>{report.message}</p>
+                    <p className="text-xs text-gray-500">
+                        {new Date(report.createdAt).toLocaleString()}
+                    </p>
+                    {report.verified && (
+                        <p className="text-green-600 text-xs font-semibold">
+                            ✔ Verified
+                        </p>
+                    )}
+                    {report.imageUrls && (
+                        <img
+                            src={report.imageUrls[0]}
+                            alt={report.type}
+                            className="mt-2 w-full h-24 object-cover rounded"
+                        />
+                    )}
+                </div>
+            </Popup>
+        </Marker>
+    ))
+}
+
+export default function Map({
+    barangays,
+    reports,
+    selectedBarangay,
+}: MapProps) {
     const geoJsonStyle: StyleFunction<BarangayFeature["properties"]> = (
         feature
     ) => {
@@ -41,17 +84,15 @@ export default function Map({ barangays, selectedBarangay }: MapProps) {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <>
-                <GeoJSON
-                    data={barangays}
-                    onEachFeature={onEachFeature}
-                    style={geoJsonStyle}
-                />
-                <FitBoundsToGeoJSON geojson={barangays} />
-                {selectedBarangay && (
-                    <ZoomToBarangay feature={selectedBarangay} />
-                )}
-            </>
+
+            <GeoJSON
+                data={barangays}
+                onEachFeature={onEachFeature}
+                style={geoJsonStyle}
+            />
+            <FitBoundsToGeoJSON geojson={barangays} />
+            {selectedBarangay && <ZoomToBarangay feature={selectedBarangay} />}
+            {renderReportMarkers(reports)}
         </MapContainer>
     )
 }
