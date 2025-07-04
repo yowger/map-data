@@ -28,3 +28,5 @@ export type BarangayGeoJSON = {
     }
     features: BarangayFeature[]
 }
+
+export type BBox = [number, number, number, number]

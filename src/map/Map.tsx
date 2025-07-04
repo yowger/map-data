@@ -7,6 +7,7 @@ import {
     useMap,
     Marker,
     Popup,
+    useMapEvents,
 } from "react-leaflet"
 
 import "leaflet/dist/leaflet.css"
@@ -17,42 +18,14 @@ interface MapProps {
     selectedBarangay: BarangayFeature | null
     barangays: BarangayGeoJSON
     reports: MapReport[]
-}
-
-function renderReportMarkers(reports: MapReport[]) {
-    return reports?.map((report) => (
-        <Marker key={report.id} position={[report.lat, report.lng]}>
-            <Popup>
-                <div className="text-sm space-y-1">
-                    <p className="font-medium">
-                        {report.type.replace("_", " ").toUpperCase()}
-                    </p>
-                    <p>{report.message}</p>
-                    <p className="text-xs text-gray-500">
-                        {new Date(report.createdAt).toLocaleString()}
-                    </p>
-                    {report.verified && (
-                        <p className="text-green-600 text-xs font-semibold">
-                            ✔ Verified
-                        </p>
-                    )}
-                    {report.imageUrls && (
-                        <img
-                            src={report.imageUrls[0]}
-                            alt={report.type}
-                            className="mt-2 w-full h-24 object-cover rounded"
-                        />
-                    )}
-                </div>
-            </Popup>
-        </Marker>
-    ))
+    OnMoveEnd?: (map: Leaflet.Map) => void | undefined
 }
 
 export default function Map({
     barangays,
     reports,
     selectedBarangay,
+    OnMoveEnd,
 }: MapProps) {
     const geoJsonStyle: StyleFunction<BarangayFeature["properties"]> = (
         feature
@@ -91,6 +64,7 @@ export default function Map({
                 style={geoJsonStyle}
             />
             <FitBoundsToGeoJSON geojson={barangays} />
+            <MapEvents onMoveEnd={OnMoveEnd} />
             {selectedBarangay && <ZoomToBarangay feature={selectedBarangay} />}
             {renderReportMarkers(reports)}
         </MapContainer>
@@ -126,4 +100,50 @@ function FitBoundsToGeoJSON({
     }, [geojson, map])
 
     return null
+}
+
+interface MapEventsProps {
+    onClick?: (latlng: Leaflet.LatLng) => void
+    onMoveEnd?: (map: Leaflet.Map) => void
+    onZoomEnd?: (zoom: number, map: Leaflet.Map) => void
+}
+
+export function MapEvents({ onClick, onMoveEnd, onZoomEnd }: MapEventsProps) {
+    const map = useMapEvents({
+        click: (e) => onClick?.(e.latlng),
+        moveend: () => onMoveEnd?.(map),
+        zoomend: () => onZoomEnd?.(map.getZoom(), map),
+    })
+
+    return null
+}
+
+function renderReportMarkers(reports: MapReport[]) {
+    return reports?.map((report) => (
+        <Marker key={report.id} position={[report.lat, report.lng]}>
+            <Popup>
+                <div className="text-sm space-y-1">
+                    <p className="font-medium">
+                        {report.type.replace("_", " ").toUpperCase()}
+                    </p>
+                    <p>{report.message}</p>
+                    <p className="text-xs text-gray-500">
+                        {new Date(report.createdAt).toLocaleString()}
+                    </p>
+                    {report.verified && (
+                        <p className="text-green-600 text-xs font-semibold">
+                            ✔ Verified
+                        </p>
+                    )}
+                    {report.imageUrls && (
+                        <img
+                            src={report.imageUrls[0]}
+                            alt={report.type}
+                            className="mt-2 w-full h-24 object-cover rounded"
+                        />
+                    )}
+                </div>
+            </Popup>
+        </Marker>
+    ))
 }
