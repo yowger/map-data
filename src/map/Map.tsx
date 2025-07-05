@@ -149,6 +149,9 @@ function createClusterIcon(count: number) {
 
 export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
     const map = useMap()
+    const bounds = map.getBounds()
+    const paddedBounds = bounds.pad(0.7)
+
     const [markerCache, setMarkerCache] = useState<ClusterFeature[]>([])
     const [lastZoom, setLastZoom] = useState(map.getZoom())
 
@@ -163,23 +166,34 @@ export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
     useEffect(() => {
         const currentZoom = map.getZoom()
 
-        setMarkerCache((prev) => {
+        setMarkerCache((prevMarkers) => {
             if (lastZoom !== currentZoom) {
                 setLastZoom(currentZoom)
 
                 return clusters
             }
 
-            const prevIds = new Set(prev.map((f) => getFeatureKey(f)))
-            const newClusters = clusters.filter(
-                (f) => !prevIds.has(getFeatureKey(f))
+            const prevIds = new Set(
+                prevMarkers.map((prevMarker) => getFeatureKey(prevMarker))
             )
 
-            console.log("🚀 ~ setMarkerCache ~ newClusters:", newClusters)
+            const retainedClusters = prevMarkers.filter((prevMarker) => {
+                const [lng, lat] = prevMarker.geometry.coordinates
 
-            return [...prev, ...newClusters]
+                return paddedBounds.contains([lat, lng])
+            })
+
+            const newClusters = clusters.filter((cluster) => {
+                const key = getFeatureKey(cluster)
+
+                return !prevIds.has(key)
+            })
+
+            return [...retainedClusters, ...newClusters]
         })
-    }, [clusters, lastZoom, map])
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [clusters, map])
 
     return (
         <>
@@ -191,26 +205,6 @@ export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
 
                 if (isClusterType) {
                     const { cluster_id, point_count } = feature.properties
-
-                    // return (
-                    //     <CircleMarker
-                    //         key={clusterId}
-                    //         center={[lat, lng]}
-                    //         radius={Math.min(40, point_count + 10)}
-                    //         fillColor="#3b82f6"
-                    //         fillOpacity={0.3}
-                    //         stroke={false}
-                    //         eventHandlers={{
-                    //             click: () => {
-                    //                 map.setView([lat, lng], map.getZoom() + 2)
-
-                    //                 onClusterClick?.(cluster_id, [lng, lat])
-                    //             },
-                    //         }}
-                    //     >
-                    //         <Popup>{point_count} reports</Popup>
-                    //     </CircleMarker>
-                    // )
 
                     return (
                         <Marker
