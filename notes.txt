@@ -1,0 +1,6 @@
+caching cluster strategy
+
+    -> visible map bounds are sent to backend  
+    -> backend sends to frontend markers within visible map bounds
+    -> if map moved, old markers are save and new markers are only added preventing flicker (solved).
+    -> markers from away from current visible bounds will be deleted improving efficieny.
