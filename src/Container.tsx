@@ -6,7 +6,7 @@ import { useGetBarangayGeoData } from "./api/useGetBarangayGeoData"
 import { useGetReportClusters } from "./api/useGetBarangayReportClusters"
 import BarangayDetailView from "./components/BarangayViewDetail"
 import BarangayListView from "./components/BarangayListView"
-import { mockReports } from "./data/mock/mockReports"
+// import { mockReports } from "./data/mock/mockReports"
 import Map from "./map/Map"
 import type { BarangayFeature, BBox } from "./types/map"
 
@@ -74,8 +74,9 @@ export default function Container() {
 
             <Map
                 barangays={barangays}
+                clusters={clusters}
                 selectedBarangay={selectedBarangay}
-                reports={mockReports}
+                // reports={mockReports}
                 OnMoveEnd={handleMoveEnd}
             />
         </div>

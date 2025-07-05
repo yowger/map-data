@@ -30,3 +30,30 @@ export type BarangayGeoJSON = {
 }
 
 export type BBox = [number, number, number, number]
+
+export interface BaseFeature {
+    type: "Feature"
+    geometry: {
+        type: "Point"
+        coordinates: [number, number]
+    }
+}
+
+export interface ClusterPoint extends BaseFeature {
+    properties: {
+        cluster: true
+        cluster_id: number
+        point_count: number
+        point_count_abbreviated: string
+    }
+}
+
+export interface ReportPoint extends BaseFeature {
+    properties: {
+        cluster?: false
+        id: string
+        type: string
+    }
+}
+
+export type ClusterFeature = ClusterPoint | ReportPoint

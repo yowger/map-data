@@ -1,23 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 
-import type { BBox } from "../types/map"
-
-export interface ClusterFeature {
-    type: "Feature"
-    geometry: {
-        type: "Point"
-        coordinates: [number, number]
-    }
-    properties: {
-        cluster: boolean
-        cluster_id?: number
-        point_count?: number
-        point_count_abbreviated?: string
-        type?: string
-        message?: string
-    }
-}
+import type { BBox, ClusterFeature } from "../types/map"
 
 export function getReportClusters(
     bbox: BBox,

@@ -1,5 +1,5 @@
 import Leaflet, { type StyleFunction } from "leaflet"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
     MapContainer,
     TileLayer,
@@ -11,19 +11,24 @@ import {
 } from "react-leaflet"
 
 import "leaflet/dist/leaflet.css"
-import type { BarangayFeature, BarangayGeoJSON } from "../types/map"
+import type {
+    BarangayFeature,
+    BarangayGeoJSON,
+    ClusterFeature,
+} from "../types/map"
 import type { MapReport } from "../types/reports"
 
 interface MapProps {
+    clusters?: ClusterFeature[]
     selectedBarangay: BarangayFeature | null
     barangays: BarangayGeoJSON
-    reports: MapReport[]
+    reports?: MapReport[]
     OnMoveEnd?: (map: Leaflet.Map) => void | undefined
 }
 
 export default function Map({
     barangays,
-    reports,
+    clusters,
     selectedBarangay,
     OnMoveEnd,
 }: MapProps) {
@@ -66,7 +71,8 @@ export default function Map({
             <FitBoundsToGeoJSON geojson={barangays} />
             <MapEvents onMoveEnd={OnMoveEnd} />
             {selectedBarangay && <ZoomToBarangay feature={selectedBarangay} />}
-            {renderReportMarkers(reports)}
+            {/* {renderReportMarkers(reports)} */}
+            <ClusterLayer clusters={clusters ?? []} />
         </MapContainer>
     )
 }
@@ -118,32 +124,126 @@ export function MapEvents({ onClick, onMoveEnd, onZoomEnd }: MapEventsProps) {
     return null
 }
 
-function renderReportMarkers(reports: MapReport[]) {
-    return reports?.map((report) => (
-        <Marker key={report.id} position={[report.lat, report.lng]}>
-            <Popup>
-                <div className="text-sm space-y-1">
-                    <p className="font-medium">
-                        {report.type.replace("_", " ").toUpperCase()}
-                    </p>
-                    <p>{report.message}</p>
-                    <p className="text-xs text-gray-500">
-                        {new Date(report.createdAt).toLocaleString()}
-                    </p>
-                    {report.verified && (
-                        <p className="text-green-600 text-xs font-semibold">
-                            ✔ Verified
-                        </p>
-                    )}
-                    {report.imageUrls && (
-                        <img
-                            src={report.imageUrls[0]}
-                            alt={report.type}
-                            className="mt-2 w-full h-24 object-cover rounded"
-                        />
-                    )}
-                </div>
-            </Popup>
-        </Marker>
-    ))
+interface ClusterLayerProps {
+    clusters: ClusterFeature[]
+    onClusterClick?: (clusterId: number, coordinates: [number, number]) => void
+}
+
+function getFeatureKey(feature: ClusterFeature) {
+    if (feature.properties.cluster) {
+        const [lng, lat] = feature.geometry.coordinates
+
+        return `cluster-${lat.toFixed(5)}-${lng.toFixed(5)}`
+    } else {
+        return `report-${feature.properties.id}`
+    }
+}
+
+function createClusterIcon(count: number) {
+    return Leaflet.divIcon({
+        html: `<div class="cluster-marker">${count}</div>`,
+        className: "custom-cluster-icon",
+        iconSize: [40, 40],
+    })
+}
+
+export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
+    const map = useMap()
+    const [markerCache, setMarkerCache] = useState<ClusterFeature[]>([])
+    const [lastZoom, setLastZoom] = useState(map.getZoom())
+
+    const clusterCount = clusters.filter((f) => f.properties.cluster).length
+    const pointCount = clusters.length - clusterCount
+
+    console.log("📦 Received clusters:", clusters.length)
+    console.log("🔵 Cluster circles:", clusterCount)
+    console.log("📍 Individual report points:", pointCount)
+    console.log("🧠 Cached markers total:", markerCache.length)
+
+    useEffect(() => {
+        const currentZoom = map.getZoom()
+
+        setMarkerCache((prev) => {
+            if (lastZoom !== currentZoom) {
+                setLastZoom(currentZoom)
+
+                return clusters
+            }
+
+            const prevIds = new Set(prev.map((f) => getFeatureKey(f)))
+            const newClusters = clusters.filter(
+                (f) => !prevIds.has(getFeatureKey(f))
+            )
+
+            console.log("🚀 ~ setMarkerCache ~ newClusters:", newClusters)
+
+            return [...prev, ...newClusters]
+        })
+    }, [clusters, lastZoom, map])
+
+    return (
+        <>
+            {markerCache.map((feature) => {
+                const [lng, lat] = feature.geometry.coordinates
+                const clusterId = `cluster-${lat.toFixed(5)}-${lng.toFixed(5)}`
+
+                const isClusterType = feature.properties.cluster
+
+                if (isClusterType) {
+                    const { cluster_id, point_count } = feature.properties
+
+                    // return (
+                    //     <CircleMarker
+                    //         key={clusterId}
+                    //         center={[lat, lng]}
+                    //         radius={Math.min(40, point_count + 10)}
+                    //         fillColor="#3b82f6"
+                    //         fillOpacity={0.3}
+                    //         stroke={false}
+                    //         eventHandlers={{
+                    //             click: () => {
+                    //                 map.setView([lat, lng], map.getZoom() + 2)
+
+                    //                 onClusterClick?.(cluster_id, [lng, lat])
+                    //             },
+                    //         }}
+                    //     >
+                    //         <Popup>{point_count} reports</Popup>
+                    //     </CircleMarker>
+                    // )
+
+                    return (
+                        <Marker
+                            key={clusterId}
+                            position={[lat, lng]}
+                            icon={createClusterIcon(point_count)}
+                            eventHandlers={{
+                                click: () => {
+                                    map.setView([lat, lng], map.getZoom() + 2)
+                                    onClusterClick?.(cluster_id, [lng, lat])
+                                },
+                            }}
+                        >
+                            <Popup>{point_count} reports</Popup>
+                        </Marker>
+                    )
+                } else {
+                    const { id, type } = feature.properties
+                    const markerId = `report-${id}`
+
+                    return (
+                        <Marker
+                            key={markerId}
+                            position={[lat, lng]}
+                            opacity={1}
+                        >
+                            <Popup>
+                                <strong>Type:</strong> {type}
+                            </Popup>
+                        </Marker>
+                    )
+                }
+            })}
+        </>
+    )
 }
