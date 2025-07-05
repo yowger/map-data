@@ -147,10 +147,17 @@ function createClusterIcon(count: number) {
     })
 }
 
+function getLogPadding(zoom: number): number {
+    return Math.min(1.2, Math.max(0.2, 1.5 - zoom * 0.04))
+}
+
 export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
     const map = useMap()
     const bounds = map.getBounds()
-    const paddedBounds = bounds.pad(0.7)
+    const padding = getLogPadding(map.getZoom())
+    console.log("🚀 ~ ClusterLayer ~ map.getZoom():", map.getZoom())
+    console.log("🚀 ~ ClusterLayer ~ padding:", padding)
+    const paddedBounds = bounds.pad(padding)
 
     const [markerCache, setMarkerCache] = useState<ClusterFeature[]>([])
     const [lastZoom, setLastZoom] = useState(map.getZoom())
