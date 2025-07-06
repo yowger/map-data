@@ -1,4 +1,4 @@
-import type { BarangayFeature } from "../types/map"
+import type { BarangayFeature } from "../../types/map"
 
 export default function BarangayDetailView({
     barangay,

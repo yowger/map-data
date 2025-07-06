@@ -4,7 +4,7 @@ import axios from "axios"
 import type { BarangayGeoJSON } from "../types/map"
 
 function getBargangayGeoData(): Promise<BarangayGeoJSON> {
-    return axios.get("/data/barangays.geojson").then((result) => {
+    return axios.get("/data/barangaysSimplified.json").then((result) => {
         return result.data
     })
 }

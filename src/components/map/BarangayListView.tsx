@@ -1,4 +1,4 @@
-import type { BarangayFeature, BarangayGeoJSON } from "../types/map"
+import type { BarangayFeature, BarangayGeoJSON } from "../../types/map"
 
 interface Props {
     barangays: BarangayGeoJSON

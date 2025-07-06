@@ -4,11 +4,15 @@ import { useDebounceValue } from "usehooks-ts"
 
 import { useGetBarangayGeoData } from "./api/useGetBarangayGeoData"
 import { useGetReportClusters } from "./api/useGetBarangayReportClusters"
-import BarangayDetailView from "./components/BarangayViewDetail"
-import BarangayListView from "./components/BarangayListView"
+// import BarangayDetailView from "./components/map/BarangayViewDetail"
+// import BarangayListView from "./components/map/BarangayListView"
 // import { mockReports } from "./data/mock/mockReports"
 import Map from "./map/Map"
 import type { BarangayFeature, BBox } from "./types/map"
+
+function getDynamicPadding(zoom: number): number {
+    return Math.min(0.6, Math.max(0.2, 1.2 - zoom * 0.1))
+}
 
 export default function Container() {
     const [sidebarView, setSidebarView] = useState<"list" | "detail">("list")
@@ -33,11 +37,14 @@ export default function Container() {
     function handleMoveEnd(map: Leaflet.Map) {
         const bounds = map.getBounds()
 
+        const paddingFactor = getDynamicPadding(map.getZoom())
+        const paddedBounds = bounds.pad(paddingFactor)
+
         const bbox: BBox = [
-            bounds.getWest(),
-            bounds.getSouth(),
-            bounds.getEast(),
-            bounds.getNorth(),
+            paddedBounds.getWest(),
+            paddedBounds.getSouth(),
+            paddedBounds.getEast(),
+            paddedBounds.getNorth(),
         ]
         const zoom = map.getZoom()
 
@@ -55,7 +62,7 @@ export default function Container() {
 
     return (
         <div className="flex h-screen">
-            <aside className="w-96 bg-white shadow overflow-y-auto p-4">
+            {/* <aside className="w-96 bg-white shadow overflow-y-auto p-4">
                 {sidebarView === "list" && (
                     <BarangayListView
                         barangays={barangays}
@@ -70,7 +77,7 @@ export default function Container() {
                         onBack={() => setSidebarView("list")}
                     />
                 )}
-            </aside>
+            </aside> */}
 
             <Map
                 barangays={barangays}
