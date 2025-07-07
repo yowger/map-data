@@ -1,5 +1,4 @@
 import Leaflet from "leaflet"
-import { useEffect, useState } from "react"
 import { useMap, Marker, Popup } from "react-leaflet"
 
 import "leaflet/dist/leaflet.css"
@@ -12,61 +11,10 @@ interface ClusterLayerProps {
 
 export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
     const map = useMap()
-    const bounds = map.getBounds()
-    const padding = getLogPadding(map.getZoom())
-    console.log("🚀 ~ ClusterLayer ~ map.getZoom():", map.getZoom())
-    console.log("🚀 ~ ClusterLayer ~ padding:", padding)
-    const paddedBounds = bounds.pad(padding)
-
-    const [markerCache, setMarkerCache] = useState<ClusterFeature[]>([])
-    const [lastZoom, setLastZoom] = useState(map.getZoom())
-
-    const clusterCount = clusters.filter((f) => f.properties.cluster).length
-    const pointCount = clusters.length - clusterCount
-
-    console.log("📦 Received clusters:", clusters.length)
-    console.log("🔵 Cluster circles:", clusterCount)
-    console.log("📍 Individual report points:", pointCount)
-    console.log("🧠 Cached markers total:", markerCache.length)
-
-    useEffect(() => {
-        const currentZoom = map.getZoom()
-
-        setMarkerCache((prevMarkers) => {
-            let prevMarkersCopy = prevMarkers
-
-            if (lastZoom !== currentZoom) {
-                setLastZoom(currentZoom)
-
-                // flickers when zoomed, not big problem, fix later. for now reset markers to keep data fresh.
-                prevMarkersCopy = []
-            }
-
-            const prevIds = new Set(
-                prevMarkersCopy.map((prevMarker) => getFeatureKey(prevMarker))
-            )
-
-            const retainedClusters = prevMarkersCopy.filter((prevMarker) => {
-                const [lng, lat] = prevMarker.geometry.coordinates
-
-                return paddedBounds.contains([lat, lng])
-            })
-
-            const newClusters = clusters.filter((cluster) => {
-                const key = getFeatureKey(cluster)
-
-                return !prevIds.has(key)
-            })
-
-            return [...retainedClusters, ...newClusters]
-        })
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [clusters, map])
 
     return (
         <>
-            {markerCache.map((feature) => {
+            {clusters.map((feature) => {
                 const [lng, lat] = feature.geometry.coordinates
                 const clusterId = `cluster-${lat.toFixed(5)}-${lng.toFixed(5)}`
 
@@ -117,26 +65,12 @@ export function ClusterLayer({ clusters, onClusterClick }: ClusterLayerProps) {
     )
 }
 
-function getFeatureKey(feature: ClusterFeature) {
-    if (feature.properties.cluster) {
-        const [lng, lat] = feature.geometry.coordinates
-
-        return `cluster-${lat.toFixed(5)}-${lng.toFixed(5)}`
-    } else {
-        return `report-${feature.properties.id}`
-    }
-}
-
 function createClusterIcon(count: number) {
     return Leaflet.divIcon({
         html: `<div class="cluster-marker">${count}</div>`,
         className: "custom-cluster-icon",
         iconSize: [40, 40],
     })
-}
-
-function getLogPadding(zoom: number): number {
-    return Math.min(1.2, Math.max(0.2, 1.5 - zoom * 0.04))
 }
 
 const markerStyles: Record<string, { icon: string; color: string }> = {

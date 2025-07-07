@@ -26,8 +26,6 @@ interface MapProps {
     OnMoveEnd?: (map: Leaflet.Map) => void | undefined
 }
 
-const canvasRenderer = Leaflet.canvas()
-
 export default function Map({
     barangays,
     clusters,
@@ -41,9 +39,9 @@ export default function Map({
             selectedBarangay?.properties.Brgy_id === feature?.properties.Brgy_id
 
         return {
-            color: isSelected ? "#e53e3e" : "#3182ce",
-            weight: isSelected ? 5 : 0.75,
-            fill: false,
+            color: "#3182ce",
+            weight: 0.75,
+            fill: isSelected ? true : false,
         }
     }
 
@@ -69,12 +67,11 @@ export default function Map({
                 data={barangays}
                 onEachFeature={onEachFeature}
                 style={geoJsonStyle}
-                // renderer={canvasRenderer}
+                key={selectedBarangay?.properties.Brgy_id}
             />
             <FitBoundsToGeoJSON geojson={barangays} />
             <MapEvents onMoveEnd={OnMoveEnd} />
             {selectedBarangay && <ZoomToBarangay feature={selectedBarangay} />}
-            {/* {renderReportMarkers(reports)} */}
             <ClusterLayer clusters={clusters ?? []} />
         </MapContainer>
     )

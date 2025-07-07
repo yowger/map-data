@@ -1,17 +1,23 @@
 import Leaflet from "leaflet"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDebounceValue } from "usehooks-ts"
 
 import { useGetBarangayGeoData } from "./api/useGetBarangayGeoData"
 import { useGetReportClusters } from "./api/useGetBarangayReportClusters"
-// import BarangayDetailView from "./components/map/BarangayViewDetail"
-// import BarangayListView from "./components/map/BarangayListView"
-// import { mockReports } from "./data/mock/mockReports"
+import BarangayDetailView from "./components/map/BarangayViewDetail"
+import BarangayListView from "./components/map/BarangayListView"
 import Map from "./map/Map"
-import type { BarangayFeature, BBox } from "./types/map"
+import type { BarangayFeature, BBox, ClusterFeature } from "./types/map"
 
 function getDynamicPadding(zoom: number): number {
-    return Math.min(0.6, Math.max(0.2, 1.2 - zoom * 0.1))
+    console.log("🚀 ~ getDynamicPadding ~ zoom:", zoom)
+    const maxPadding = 0.6
+    const minPadding = 0.2
+    const paddingFalloffRate = 0.1
+
+    const dynamicPadding = 1.2 - zoom * paddingFalloffRate
+
+    return Math.min(maxPadding, Math.max(minPadding, dynamicPadding))
 }
 
 export default function Container() {
@@ -20,6 +26,7 @@ export default function Container() {
         useState<BarangayFeature | null>(null)
     const [bbox, setBbox] = useDebounceValue<BBox | null>(null, 450)
     const [zoom, setZoom] = useDebounceValue<number | null>(null, 450)
+    const [markerCache, setMarkerCache] = useState<ClusterFeature[]>([])
 
     const {
         data: barangays,
@@ -32,7 +39,6 @@ export default function Container() {
         // isLoading,
         // isError,
     } = useGetReportClusters(bbox as BBox, zoom as number)
-    console.log("🚀 ~ Container ~ clusters:", clusters)
 
     function handleMoveEnd(map: Leaflet.Map) {
         const bounds = map.getBounds()
@@ -52,6 +58,33 @@ export default function Container() {
         setZoom(zoom)
     }
 
+    useEffect(() => {
+        if (!clusters) return
+
+        const clusterKey = (cluster: ClusterFeature) =>
+            `${cluster.geometry.coordinates[0].toFixed(
+                5
+            )}:${cluster.geometry.coordinates[1].toFixed(5)}`
+
+        const newClusterKeys = new Set(clusters.map(clusterKey))
+
+        setMarkerCache((prevMarkerCache) => {
+            const retainedClusters = prevMarkerCache.filter((marker) =>
+                newClusterKeys.has(clusterKey(marker))
+            )
+
+            const newClusters = clusters.filter(
+                (cluster) =>
+                    !retainedClusters.some(
+                        (retainedCluster) =>
+                            clusterKey(retainedCluster) === clusterKey(cluster)
+                    )
+            )
+
+            return [...retainedClusters, ...newClusters]
+        })
+    }, [clusters])
+
     if (barangaysLoading) {
         return <p>Loading...</p>
     }
@@ -62,7 +95,7 @@ export default function Container() {
 
     return (
         <div className="flex h-screen">
-            {/* <aside className="w-96 bg-white shadow overflow-y-auto p-4">
+            <aside className="w-96 bg-white shadow overflow-y-auto p-4">
                 {sidebarView === "list" && (
                     <BarangayListView
                         barangays={barangays}
@@ -77,13 +110,12 @@ export default function Container() {
                         onBack={() => setSidebarView("list")}
                     />
                 )}
-            </aside> */}
+            </aside>
 
             <Map
                 barangays={barangays}
-                clusters={clusters}
+                clusters={markerCache}
                 selectedBarangay={selectedBarangay}
-                // reports={mockReports}
                 OnMoveEnd={handleMoveEnd}
             />
         </div>

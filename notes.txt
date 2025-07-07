@@ -5,3 +5,9 @@ caching cluster strategy
     -> if map moved, old markers are save and new markers are only added preventing flicker (solved).
     -> markers from away from current visible bounds will be deleted outside of bounds, bounds are larger the higher the zoom.
     -> same strategy when zoomed, markers out of bounds will be removed but onces on visible screen and padded boundaries are kept.
+
+Problems approached
+
+-> Map geojson had too many points, reducing effeciency so i used mapshaper to reduced points while still maintaining shape accuracy.
+-> using geojson fill reduces effeciency when rendering, so i removed it and only kept borders, I used another tactic for filling selected area.
+

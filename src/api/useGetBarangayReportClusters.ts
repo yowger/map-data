@@ -7,7 +7,6 @@ export function getReportClusters(
     bbox: BBox,
     zoom: number
 ): Promise<ClusterFeature[]> {
-    console.log("enabled")
     const bboxParam = bbox.join(",")
 
     return axios
