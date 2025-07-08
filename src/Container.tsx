@@ -50,14 +50,14 @@ export default function Container() {
     async function handleMoveEnd(map: Leaflet.Map) {
         const bounds = map.getBounds()
 
-        const paddingFactor = getDynamicPadding(map.getZoom())
-        const paddedBounds = bounds.pad(paddingFactor)
+        const paddingFactor = getDynamicPadding(map.getZoom()) + 0.8
+        const fetchPaddedBounds = bounds.pad(paddingFactor)
 
         const bbox: BBox = [
-            paddedBounds.getWest(),
-            paddedBounds.getSouth(),
-            paddedBounds.getEast(),
-            paddedBounds.getNorth(),
+            fetchPaddedBounds.getWest(),
+            fetchPaddedBounds.getSouth(),
+            fetchPaddedBounds.getEast(),
+            fetchPaddedBounds.getNorth(),
         ]
         const zoom = map.getZoom()
 
@@ -93,18 +93,30 @@ export default function Container() {
             }
         }
 
+        const incomingClusterKeys = new Set(
+            incomingClusters.map((cluster) => {
+                if (cluster.properties.cluster) {
+                    const [lng, lat] = cluster.geometry.coordinates
+                    return `${lng.toFixed(5)}:${lat.toFixed(5)}`
+                } else {
+                    return cluster.properties.id
+                }
+            })
+        )
+
+        const visiblePaddingFactor = 0.6
+        const visiblePaddedBounds = bounds.pad(visiblePaddingFactor)
+
         const showVisibleClusters = dedupedCachedClusters.filter((cluster) => {
             const [lng, lat] = cluster.geometry.coordinates
 
-            const clusterExist = incomingClusters.some((clusters) => {
-                const [lng2, lat2] = clusters.geometry.coordinates
-
-                return lng === lng2 && lat === lat2
-            })
+            const key = cluster.properties.cluster
+                ? `${lng.toFixed(5)}:${lat.toFixed(5)}`
+                : cluster.properties.id
 
             return (
-                paddedBounds.contains(new Leaflet.LatLng(lat, lng)) &&
-                clusterExist
+                visiblePaddedBounds.contains(Leaflet.latLng(lat, lng)) &&
+                incomingClusterKeys.has(key)
             )
         })
         console.log(
