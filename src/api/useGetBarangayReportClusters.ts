@@ -20,8 +20,9 @@ export function getReportClusters(
 
 export function useGetReportClusters(bbox: BBox, zoom: number) {
     return useQuery({
-        queryKey: ["reportClusters", bbox, zoom],
+        queryKey: ["reportClusters", zoom, bbox],
         queryFn: () => getReportClusters(bbox, zoom),
+        staleTime: 1000 * 60 * 5,
         enabled: !!bbox && !!zoom,
     })
 }

@@ -6,6 +6,8 @@ caching cluster strategy
     -> markers from away from current visible bounds will be deleted outside of bounds, bounds are larger the higher the zoom.
     -> same strategy when zoomed, markers out of bounds will be removed but onces on visible screen and padded boundaries are kept.
 
+    -> map strategy changed, get cached in tanstack query by zoom, show only visible bounding area + padding.
+
 Problems approached
 
 -> Map geojson had too many points, reducing effeciency so i used mapshaper to reduced points while still maintaining shape accuracy.
