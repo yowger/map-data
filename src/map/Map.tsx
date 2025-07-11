@@ -23,7 +23,7 @@ interface MapProps {
     selectedBarangay: BarangayFeature | null
     barangays: BarangayGeoJSON
     reports?: MapReport[]
-    OnMoveEnd?: (map: Leaflet.Map) => void | undefined
+    OnMoveEnd?: (map: Leaflet.Map) => void
 }
 
 export default function Map({

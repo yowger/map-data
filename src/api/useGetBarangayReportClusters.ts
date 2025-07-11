@@ -1,7 +1,28 @@
-import { useQuery } from "@tanstack/react-query"
+import { QueryClient, useQuery } from "@tanstack/react-query"
 import axios from "axios"
 
 import type { BBox, ClusterFeature } from "../types/map"
+
+const CLUSTER_STALE_TIME = 1000 * 60 * 5
+const CLUSTER_KEY = "reportClusters"
+
+export async function fetchClusters(
+    queryClient: QueryClient,
+    zoom: number,
+    bbox: BBox
+): Promise<ClusterFeature[]> {
+    return await queryClient.fetchQuery({
+        queryKey: [CLUSTER_KEY, zoom, bbox],
+        queryFn: () => getReportClusters(bbox, zoom),
+        staleTime: CLUSTER_STALE_TIME,
+    })
+}
+
+export function getCachedClusters(queryClient: QueryClient, zoom: number) {
+    return queryClient.getQueriesData({
+        queryKey: [CLUSTER_KEY, zoom],
+    })
+}
 
 export function getReportClusters(
     bbox: BBox,

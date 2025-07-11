@@ -1,35 +1,29 @@
+import { useQueryClient } from "@tanstack/react-query"
 import Leaflet from "leaflet"
-import { useEffect, useState } from "react"
-import { useDebounceValue } from "usehooks-ts"
+import { useState } from "react"
 
 import { useGetBarangayGeoData } from "./api/useGetBarangayGeoData"
 import {
-    getReportClusters,
-    useGetReportClusters,
+    fetchClusters,
+    getCachedClusters,
 } from "./api/useGetBarangayReportClusters"
 import BarangayDetailView from "./components/map/BarangayViewDetail"
 import BarangayListView from "./components/map/BarangayListView"
 import Map from "./map/Map"
 import type { BarangayFeature, BBox, ClusterFeature } from "./types/map"
-import { QueryCache, useQueryClient } from "@tanstack/react-query"
+import {
+    deduplicateClusters,
+    getClusterKey,
+    getDynamicPadding,
+} from "./utils/mapUtils"
 
-function getDynamicPadding(zoom: number): number {
-    const maxPadding = 0.6
-    const minPadding = 0.2
-    const paddingFalloffRate = 0.1
-
-    const dynamicPadding = 1.2 - zoom * paddingFalloffRate
-
-    return Math.min(maxPadding, Math.max(minPadding, dynamicPadding))
-}
+const PADDING_FALLOFF_RATE = 0.1
+const VISIBLE_PADDING_FACTOR = 0.6
 
 export default function Container() {
     const [sidebarView, setSidebarView] = useState<"list" | "detail">("list")
     const [selectedBarangay, setSelectedBarangay] =
         useState<BarangayFeature | null>(null)
-    const [bbox, setBbox] = useDebounceValue<BBox | null>(null, 450)
-    const [zoom, setZoom] = useDebounceValue<number | null>(null, 450)
-    // const [markerCache, setMarkerCache] = useState<ClusterFeature[]>([])
     const [visibleClusters, setVisibleClusters] = useState<ClusterFeature[]>([])
 
     const {
@@ -38,103 +32,43 @@ export default function Container() {
         error: barangaysError,
     } = useGetBarangayGeoData()
 
-    // const {
-    //     data: clusters,
-    //     // isLoading,
-    //     // isError,
-    //     isFetched,
-    // } = useGetReportClusters(bbox as BBox, zoom as number)
-
     const queryClient = useQueryClient()
 
     async function handleMoveEnd(map: Leaflet.Map) {
         const bounds = map.getBounds()
+        const zoom = map.getZoom()
 
-        const paddingFactor = getDynamicPadding(map.getZoom()) + 0.8
-        const fetchPaddedBounds = bounds.pad(paddingFactor)
-
+        const fetchPadding =
+            getDynamicPadding(map.getZoom()) + PADDING_FALLOFF_RATE
+        const fetchPaddedBounds = bounds.pad(fetchPadding)
         const bbox: BBox = [
             fetchPaddedBounds.getWest(),
             fetchPaddedBounds.getSouth(),
             fetchPaddedBounds.getEast(),
             fetchPaddedBounds.getNorth(),
         ]
-        const zoom = map.getZoom()
 
-        const incomingClusters = await queryClient.fetchQuery({
-            queryKey: ["reportClusters", zoom, bbox],
-            queryFn: () => getReportClusters(bbox, zoom),
-            staleTime: 1000 * 60 * 5,
-        })
-        // console.log("🚀 ~ handleMoveEnd ~ incomingClusters:", incomingClusters)
+        const incomingClusters = await fetchClusters(queryClient, zoom, bbox)
+        const cachedClusters = getCachedClusters(queryClient, zoom)
+        const dedupedCachedClusters = deduplicateClusters(cachedClusters)
 
-        const cachedClusters = queryClient.getQueriesData({
-            queryKey: ["reportClusters", zoom],
-        })
-        // console.log("🚀 ~ handleMoveEnd ~ cachedClusters:", cachedClusters)
+        const incomingClusterKeys = new Set(incomingClusters.map(getClusterKey))
+        const visibleBounds = bounds.pad(VISIBLE_PADDING_FACTOR)
 
-        // setBbox(bbox)
-        // setZoom(zoom)
-
-        const clusterSet = new Set<string>()
-        const dedupedCachedClusters: ClusterFeature[] = []
-
-        for (const [, data] of cachedClusters) {
-            if (!Array.isArray(data)) continue
-
-            for (const cluster of data) {
+        const filteredVisibleClusters = dedupedCachedClusters.filter(
+            (cluster) => {
                 const [lng, lat] = cluster.geometry.coordinates
-                const key = `${lng.toFixed(5)}:${lat.toFixed(5)}`
+                const key = getClusterKey(cluster)
 
-                if (!clusterSet.has(key)) {
-                    clusterSet.add(key)
-                    dedupedCachedClusters.push(cluster)
-                }
+                return (
+                    visibleBounds.contains(Leaflet.latLng(lat, lng)) &&
+                    incomingClusterKeys.has(key)
+                )
             }
-        }
-
-        const incomingClusterKeys = new Set(
-            incomingClusters.map((cluster) => {
-                if (cluster.properties.cluster) {
-                    const [lng, lat] = cluster.geometry.coordinates
-                    return `${lng.toFixed(5)}:${lat.toFixed(5)}`
-                } else {
-                    return cluster.properties.id
-                }
-            })
         )
 
-        const visiblePaddingFactor = 0.6
-        const visiblePaddedBounds = bounds.pad(visiblePaddingFactor)
-
-        const showVisibleClusters = dedupedCachedClusters.filter((cluster) => {
-            const [lng, lat] = cluster.geometry.coordinates
-
-            const key = cluster.properties.cluster
-                ? `${lng.toFixed(5)}:${lat.toFixed(5)}`
-                : cluster.properties.id
-
-            return (
-                visiblePaddedBounds.contains(Leaflet.latLng(lat, lng)) &&
-                incomingClusterKeys.has(key)
-            )
-        })
-        console.log(
-            "🚀 ~ showVisibleClusters ~ showVisibleClusters:",
-            showVisibleClusters
-        )
-
-        // show only visible clusters
-
-        // setVisibleClusters(dedupedCachedClusters)
-        setVisibleClusters(showVisibleClusters)
+        setVisibleClusters(filteredVisibleClusters)
     }
-
-    // useEffect(() => {
-    //     if (!clusters) return
-
-    //     console.log("has clusters")
-    // }, [clusters])
 
     if (barangaysLoading) {
         return <p>Loading...</p>
@@ -172,32 +106,3 @@ export default function Container() {
         </div>
     )
 }
-
-/*
-useEffect(() => {
-        if (!clusters) return
-
-        const clusterKey = (cluster: ClusterFeature) =>
-            `${cluster.geometry.coordinates[0].toFixed(
-                5
-            )}:${cluster.geometry.coordinates[1].toFixed(5)}`
-
-        const newClusterKeys = new Set(clusters.map(clusterKey))
-
-        setMarkerCache((prevMarkerCache) => {
-            const retainedClusters = prevMarkerCache.filter((marker) =>
-                newClusterKeys.has(clusterKey(marker))
-            )
-
-            const newClusters = clusters.filter(
-                (cluster) =>
-                    !retainedClusters.some(
-                        (retainedCluster) =>
-                            clusterKey(retainedCluster) === clusterKey(cluster)
-                    )
-            )
-
-            return [...retainedClusters, ...newClusters]
-        })
-    }, [clusters])
-*/
