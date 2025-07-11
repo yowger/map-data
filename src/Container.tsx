@@ -7,10 +7,11 @@ import {
     fetchClusters,
     getCachedClusters,
 } from "./api/useGetBarangayReportClusters"
-import BarangayDetailView from "./components/map/BarangayViewDetail"
-import BarangayListView from "./components/map/BarangayListView"
+// import BarangayDetailView from "./components/map/BarangayViewDetail"
+// import BarangayListView from "./components/map/BarangayListView"
 import Map from "./map/Map"
 import type { BarangayFeature, BBox, ClusterFeature } from "./types/map"
+import Sidebar from "./map/Sidebar"
 import {
     deduplicateClusters,
     getClusterKey,
@@ -21,9 +22,9 @@ const PADDING_FALLOFF_RATE = 0.1
 const VISIBLE_PADDING_FACTOR = 0.6
 
 export default function Container() {
-    const [sidebarView, setSidebarView] = useState<"list" | "detail">("list")
-    const [selectedBarangay, setSelectedBarangay] =
-        useState<BarangayFeature | null>(null)
+    // const [sidebarView, setSidebarView] = useState<"list" | "detail">("list")
+    // const [selectedBarangay, setSelectedBarangay] =
+    //     useState<BarangayFeature | null>(null)
     const [visibleClusters, setVisibleClusters] = useState<ClusterFeature[]>([])
 
     const {
@@ -80,7 +81,7 @@ export default function Container() {
 
     return (
         <div className="flex h-screen">
-            <aside className="w-96 bg-white shadow overflow-y-auto p-4">
+            {/* <aside className="w-96 bg-white shadow overflow-y-auto p-4">
                 {sidebarView === "list" && (
                     <BarangayListView
                         barangays={barangays}
@@ -95,12 +96,14 @@ export default function Container() {
                         onBack={() => setSidebarView("list")}
                     />
                 )}
-            </aside>
+            </aside> */}
+            <Sidebar />
 
             <Map
                 barangays={barangays}
                 clusters={visibleClusters}
-                selectedBarangay={selectedBarangay}
+                // selectedBarangay={selectedBarangay}
+                selectedBarangay={null}
                 OnMoveEnd={handleMoveEnd}
             />
         </div>
