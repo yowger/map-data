@@ -39,74 +39,48 @@ export default function DatePicker(props: DatePickerProps) {
             }}
             components={{
                 DayButton: (dayProps) => {
-                    const { day, ...buttonProps } = dayProps
+                    const { day, modifiers, ...buttonProps } = dayProps
 
-                    let isSelected = false
+                    const isStart = modifiers.range_start
+                    const isEnd = modifiers.range_end
+                    const isMiddle = modifiers.range_middle
 
-                    if (props.selected instanceof Date) {
-                        isSelected =
-                            day.date.toDateString() ===
-                            props.selected.toDateString()
-                    } else if (
-                        props.selected &&
-                        "from" in props.selected &&
-                        "to" in props.selected
-                    ) {
-                        const { from, to } = props.selected
-                        isSelected =
-                            from !== undefined &&
-                            to !== undefined &&
-                            day.date >= from &&
-                            day.date <= to
+                    const isSelected = modifiers.selected ?? false
+
+                    let classNames =
+                        "flex items-center justify-center w-full aspect-square"
+
+                    if (isStart) {
+                        classNames += " bg-blue-500 text-white rounded-full"
+                    } else if (isEnd) {
+                        classNames +=
+                            " border border-blue-500 text-black rounded-full"
+                    } else if (isMiddle) {
+                        classNames += " bg-blue-100 text-black"
+                    } else if (isSelected) {
+                        classNames += " bg-blue-500 text-white rounded-full"
+                    } else {
+                        classNames += " hover:bg-gray-200"
                     }
 
                     return (
                         <button
                             {...buttonProps}
                             className="cursor-pointer p-0 w-full h-full"
-                            onClick={(e) => {
-                                const modifiers = dayProps.modifiers ?? {}
-
-                                if (props.mode === "single") {
-                                    props.onSelect?.(
-                                        dayProps.day.date,
-                                        dayProps.day.date,
-                                        modifiers,
-                                        e
-                                    )
-                                } else if (props.mode === "range") {
-                                    props.onSelect?.(
-                                        {
-                                            from: dayProps.day.date,
-                                            to: dayProps.day.date,
-                                        },
-                                        dayProps.day.date,
-                                        modifiers,
-                                        e
-                                    )
-                                }
-                            }}
                         >
-                            <div
-                                className={clsx(
-                                    "flex items-center justify-center w-full aspect-square",
-                                    "rounded-full",
-                                    isSelected
-                                        ? "bg-blue-500 text-white"
-                                        : "hover:bg-gray-200"
-                                )}
-                            >
+                            <div className={classNames}>
                                 {day.date.getDate()}
                             </div>
                         </button>
                     )
                 },
-                Dropdown: ({ options, onChange, value }) => {
+                Dropdown: ({ options, onSelect, value, onChange }) => {
                     return (
                         <select
                             className="w-full text-gray-500 text-base py-2 outline-0 flex pr-1"
-                            value={value?.toString()}
-                            onChange={(e) => onChange?.(e)}
+                            onChange={onChange}
+                            onSelect={onSelect}
+                            value={value}
                         >
                             {options?.map((option) => (
                                 <option
