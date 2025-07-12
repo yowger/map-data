@@ -1,6 +1,6 @@
 import clsx from "clsx"
-import { useState } from "react"
-import { DayPicker, getDefaultClassNames } from "react-day-picker"
+import { Children, useState } from "react"
+import { DayPicker, getDefaultClassNames, useDayPicker } from "react-day-picker"
 import { enUS } from "date-fns/locale"
 
 export default function CustomDateRange() {
@@ -38,6 +38,7 @@ export default function CustomDateRange() {
                     disabled: `text-gray-500`,
                     today: "font-semibold",
                     chevron: `w-4 h-4`,
+                    nav: "hidden",
                 }}
                 components={{
                     DayButton: (props) => {
@@ -66,11 +67,13 @@ export default function CustomDateRange() {
                             </button>
                         )
                     },
-                    Dropdown: ({ options, value, ...props }) => {
-                        console.log("props: ", props)
-
+                    Dropdown: ({ options, onChange, value }) => {
                         return (
-                            <select value={value}>
+                            <select
+                                className="w-full text-gray-500 text-base py-2 outline-0 flex pr-1"
+                                value={value?.toString()}
+                                onChange={(e) => onChange?.(e)}
+                            >
                                 {options?.map((option) => (
                                     <option
                                         key={option.value}
@@ -82,18 +85,60 @@ export default function CustomDateRange() {
                                 ))}
                             </select>
                         )
-                        // return (
-                        //     <select
-                        //         value={value}
-                        //         onChange={(e) =>
-                        //             onChange(Number(e.target.value))
-                        //         }
-                        //         className="border px-2 py-1 rounded bg-white text-sm"
-                        //         {...props}
-                        //     >
-                        //         {children}
-                        //     </select>
-                        // )
+                    },
+                    DropdownNav: ({ children }) => {
+                        const childrenArray = Children.toArray(children)
+
+                        const { nextMonth, previousMonth, goToMonth } =
+                            useDayPicker()
+
+                        const yearDropDown = childrenArray[0]
+                        const monthDropDown = childrenArray[1]
+
+                        return (
+                            <div className="flex w-full gap-2 items-center">
+                                <div className="">{yearDropDown ?? null}</div>
+
+                                <div className="">{monthDropDown ?? null}</div>
+
+                                <div className="flex items-center ml-auto">
+                                    <button
+                                        onClick={() =>
+                                            previousMonth &&
+                                            goToMonth(previousMonth)
+                                        }
+                                        disabled={!previousMonth}
+                                        className="rounded-full text-gray-500 cursor-pointer hover:bg-gray-200 p-1.5"
+                                    >
+                                        <svg
+                                            className="w-3.5 h-3.5 fill-gray-500"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <polygon points="16 18.112 9.81111111 12 16 5.87733333 14.0888889 4 6 12 14.0888889 20"></polygon>
+                                        </svg>
+                                    </button>
+
+                                    <button
+                                        onClick={() =>
+                                            nextMonth && goToMonth(nextMonth)
+                                        }
+                                        disabled={!nextMonth}
+                                        className="rounded-full text-gray-500 cursor-pointer hover:bg-gray-200 p-1.5"
+                                    >
+                                        <svg
+                                            className="w-3.5 h-3.5 fill-gray-500"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <polygon points="8 18.112 14.18888889 12 8 5.87733333 9.91111111 4 18 12 9.91111111 20"></polygon>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )
                     },
                 }}
             />
