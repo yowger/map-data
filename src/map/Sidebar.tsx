@@ -3,7 +3,11 @@ import DatePicker from "../components/DatePicker"
 import type { DateRange } from "react-day-picker"
 
 export default function Sidebar() {
-    const [range, setRange] = useState<DateRange>()
+    // const [range, setRange] = useState<DateRange>()
+    // console.log("🚀 ~ Sidebar ~ range:", range)
+
+    const [date, setDate] = useState<Date | undefined>()
+    console.log("🚀 ~ Sidebar ~ date:", date)
 
     return (
         <div className="w-96 bg-white shadow-md">
@@ -34,13 +38,15 @@ export default function Sidebar() {
                 </div>
             </div>
 
-            <DatePicker
+            <DatePicker mode="single" selected={date} onSelect={setDate} />
+
+            {/* <DatePicker
                 mode="range"
                 selected={range}
                 onSelect={setRange}
                 min={2}
                 max={7}
-            />
+            /> */}
 
             <h2>Barangay List</h2>
 

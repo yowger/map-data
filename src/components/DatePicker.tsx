@@ -1,5 +1,5 @@
 import clsx from "clsx"
-import { Children, useState } from "react"
+import { Children } from "react"
 import {
     DayPicker,
     getDefaultClassNames,
@@ -12,7 +12,6 @@ import { enUS } from "date-fns/locale"
 export type DatePickerProps = PropsSingle | PropsRange
 
 export default function DatePicker(props: DatePickerProps) {
-    const [selected, setSelected] = useState<Date>()
     const defaultClassNames = getDefaultClassNames()
 
     return (
@@ -39,17 +38,54 @@ export default function DatePicker(props: DatePickerProps) {
                 nav: "hidden",
             }}
             components={{
-                DayButton: (props) => {
-                    const { day, ...buttonProps } = props
-                    const isSelected =
-                        selected &&
-                        day.date.toDateString() === selected.toDateString()
+                DayButton: (dayProps) => {
+                    const { day, ...buttonProps } = dayProps
+
+                    let isSelected = false
+
+                    if (props.selected instanceof Date) {
+                        isSelected =
+                            day.date.toDateString() ===
+                            props.selected.toDateString()
+                    } else if (
+                        props.selected &&
+                        "from" in props.selected &&
+                        "to" in props.selected
+                    ) {
+                        const { from, to } = props.selected
+                        isSelected =
+                            from !== undefined &&
+                            to !== undefined &&
+                            day.date >= from &&
+                            day.date <= to
+                    }
 
                     return (
                         <button
                             {...buttonProps}
                             className="cursor-pointer p-0 w-full h-full"
-                            onClick={() => setSelected(day.date)}
+                            onClick={(e) => {
+                                const modifiers = dayProps.modifiers ?? {}
+
+                                if (props.mode === "single") {
+                                    props.onSelect?.(
+                                        dayProps.day.date,
+                                        dayProps.day.date,
+                                        modifiers,
+                                        e
+                                    )
+                                } else if (props.mode === "range") {
+                                    props.onSelect?.(
+                                        {
+                                            from: dayProps.day.date,
+                                            to: dayProps.day.date,
+                                        },
+                                        dayProps.day.date,
+                                        modifiers,
+                                        e
+                                    )
+                                }
+                            }}
                         >
                             <div
                                 className={clsx(
