@@ -1,4 +1,3 @@
-import clsx from "clsx"
 import { Children } from "react"
 import {
     DayPicker,
@@ -54,7 +53,7 @@ export default function DatePicker(props: DatePickerProps) {
                         classNames += " bg-blue-500 text-white rounded-full"
                     } else if (isEnd) {
                         classNames +=
-                            " border border-blue-500 text-black rounded-full"
+                            " border border-blue-500 text-black rounded-full bg-white"
                     } else if (isMiddle) {
                         classNames += " bg-blue-100 text-black"
                     } else if (isSelected) {
@@ -63,11 +62,30 @@ export default function DatePicker(props: DatePickerProps) {
                         classNames += " hover:bg-gray-200"
                     }
 
+                    let wrapperClassName = "cursor-pointer p-0 w-full h-full"
+
+                    if (props.mode === "range") {
+                        if (
+                            props.selected?.from &&
+                            props.selected?.to &&
+                            isStart
+                        ) {
+                            wrapperClassName += " bg-blue-100 rounded-s-full"
+                        } else if (
+                            props.selected?.from &&
+                            props.selected?.to &&
+                            isEnd
+                        ) {
+                            wrapperClassName += " bg-blue-100 rounded-e-full"
+                        }
+                    }
+                    console.log(
+                        "🚀 ~ DatePicker ~ wrapperClassName:",
+                        wrapperClassName
+                    )
+
                     return (
-                        <button
-                            {...buttonProps}
-                            className="cursor-pointer p-0 w-full h-full"
-                        >
+                        <button {...buttonProps} className={wrapperClassName}>
                             <div className={classNames}>
                                 {day.date.getDate()}
                             </div>
