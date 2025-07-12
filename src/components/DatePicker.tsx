@@ -25,6 +25,10 @@ export default function DatePicker(props: DatePickerProps) {
                         weekday: "narrow",
                     })
                 },
+                formatMonthDropdown: (month) =>
+                    month.toLocaleDateString("en-US", {
+                        month: "short",
+                    }),
             }}
             classNames={{
                 root: `${defaultClassNames.root} rounded p-2 absolute z-50 bg-white shadow-md`,
@@ -71,7 +75,7 @@ export default function DatePicker(props: DatePickerProps) {
                     } else if (isSelected) {
                         dayClassNames += " bg-blue-500 text-white rounded-full"
                     } else {
-                        dayClassNames += " hover:bg-gray-200"
+                        dayClassNames += " hover:bg-gray-100 rounded-full"
                     }
 
                     return (
@@ -108,14 +112,13 @@ export default function DatePicker(props: DatePickerProps) {
                     const { nextMonth, previousMonth, goToMonth } =
                         useDayPicker()
 
-                    const yearDropDown = childrenArray[0]
-                    const monthDropDown = childrenArray[1]
+                    const yearDropDownComponent = childrenArray[0]
+                    const monthDropDownComponent = childrenArray[1]
 
                     return (
                         <div className="flex w-full gap-2 items-center mb-1">
-                            <div className="">{yearDropDown ?? null}</div>
-
-                            <div className="">{monthDropDown ?? null}</div>
+                            <div>{yearDropDownComponent ?? null}</div>
+                            <div>{monthDropDownComponent ?? null}</div>
 
                             <div className="flex items-center ml-auto">
                                 <button
@@ -126,14 +129,7 @@ export default function DatePicker(props: DatePickerProps) {
                                     disabled={!previousMonth}
                                     className="rounded-full text-gray-500 cursor-pointer hover:bg-gray-200 p-1.5"
                                 >
-                                    <svg
-                                        className="w-3.5 h-3.5 fill-gray-500"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <polygon points="16 18.112 9.81111111 12 16 5.87733333 14.0888889 4 6 12 14.0888889 20"></polygon>
-                                    </svg>
+                                    <LeftChevron />
                                 </button>
 
                                 <button
@@ -143,14 +139,7 @@ export default function DatePicker(props: DatePickerProps) {
                                     disabled={!nextMonth}
                                     className="rounded-full text-gray-500 cursor-pointer hover:bg-gray-200 p-1.5"
                                 >
-                                    <svg
-                                        className="w-3.5 h-3.5 fill-gray-500"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <polygon points="8 18.112 14.18888889 12 8 5.87733333 9.91111111 4 18 12 9.91111111 20"></polygon>
-                                    </svg>
+                                    <RightChevron />
                                 </button>
                             </div>
                         </div>
@@ -158,5 +147,22 @@ export default function DatePicker(props: DatePickerProps) {
                 },
             }}
         />
+    )
+}
+
+// TODO: Move
+export function LeftChevron({ className = "w-3.5 h-3.5 fill-gray-500" }) {
+    return (
+        <svg className={className} width="24" height="24" viewBox="0 0 24 24">
+            <polygon points="16 18.112 9.81111111 12 16 5.87733333 14.0888889 4 6 12 14.0888889 20" />
+        </svg>
+    )
+}
+
+export function RightChevron({ className = "w-3.5 h-3.5 fill-gray-500" }) {
+    return (
+        <svg className={className} width="24" height="24" viewBox="0 0 24 24">
+            <polygon points="8 18.112 14.18888889 12 8 5.87733333 9.91111111 4 18 12 9.91111111 20" />
+        </svg>
     )
 }
