@@ -1,6 +1,10 @@
-import CustomDateRange from "../components/CustomDateRange"
+import { useState } from "react"
+import DatePicker from "../components/DatePicker"
+import type { DateRange } from "react-day-picker"
 
 export default function Sidebar() {
+    const [range, setRange] = useState<DateRange>()
+
     return (
         <div className="w-96 bg-white shadow-md">
             <div className="p-4">
@@ -30,9 +34,13 @@ export default function Sidebar() {
                 </div>
             </div>
 
-            {/* <input type="date" />
-            <input type="date" /> */}
-            <CustomDateRange />
+            <DatePicker
+                mode="range"
+                selected={range}
+                onSelect={setRange}
+                min={2}
+                max={7}
+            />
 
             <h2>Barangay List</h2>
 
