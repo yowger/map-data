@@ -39,54 +39,44 @@ export default function DatePicker(props: DatePickerProps) {
             components={{
                 DayButton: (dayProps) => {
                     const { day, modifiers, ...buttonProps } = dayProps
+                    const { mode, selected } = props
 
                     const isStart = modifiers.range_start
                     const isEnd = modifiers.range_end
                     const isMiddle = modifiers.range_middle
-
                     const isSelected = modifiers.selected ?? false
 
-                    let classNames =
-                        "flex items-center justify-center w-full aspect-square"
-
-                    if (isStart) {
-                        classNames += " bg-blue-500 text-white rounded-full"
-                    } else if (isEnd) {
-                        classNames +=
-                            " border border-blue-500 text-black rounded-full bg-white"
-                    } else if (isMiddle) {
-                        classNames += " bg-blue-100 text-black"
-                    } else if (isSelected) {
-                        classNames += " bg-blue-500 text-white rounded-full"
-                    } else {
-                        classNames += " hover:bg-gray-200"
-                    }
+                    const isRange = mode === "range"
+                    const hasRange =
+                        selected && "from" in selected && "to" in selected
 
                     let wrapperClassName = "cursor-pointer p-0 w-full h-full"
 
-                    if (props.mode === "range") {
-                        if (
-                            props.selected?.from &&
-                            props.selected?.to &&
-                            isStart
-                        ) {
-                            wrapperClassName += " bg-blue-100 rounded-s-full"
-                        } else if (
-                            props.selected?.from &&
-                            props.selected?.to &&
-                            isEnd
-                        ) {
-                            wrapperClassName += " bg-blue-100 rounded-e-full"
-                        }
+                    if (isRange && hasRange && isStart) {
+                        wrapperClassName += " bg-blue-100 rounded-s-full"
+                    } else if (isRange && hasRange && isEnd) {
+                        wrapperClassName += " bg-blue-100 rounded-e-full"
                     }
-                    console.log(
-                        "🚀 ~ DatePicker ~ wrapperClassName:",
-                        wrapperClassName
-                    )
+
+                    let dayClassNames =
+                        "flex items-center justify-center w-full aspect-square"
+
+                    if (isStart) {
+                        dayClassNames += " bg-blue-500 text-white rounded-full"
+                    } else if (isEnd) {
+                        dayClassNames +=
+                            " border border-blue-500 text-black rounded-full bg-white"
+                    } else if (isMiddle) {
+                        dayClassNames += " bg-blue-100 text-black"
+                    } else if (isSelected) {
+                        dayClassNames += " bg-blue-500 text-white rounded-full"
+                    } else {
+                        dayClassNames += " hover:bg-gray-200"
+                    }
 
                     return (
                         <button {...buttonProps} className={wrapperClassName}>
-                            <div className={classNames}>
+                            <div className={dayClassNames}>
                                 {day.date.getDate()}
                             </div>
                         </button>
