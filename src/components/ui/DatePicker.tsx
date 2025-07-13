@@ -8,6 +8,8 @@ import {
 } from "react-day-picker"
 import { enUS } from "date-fns/locale"
 
+import { LeftChevron, RightChevron } from "./Chevrons"
+
 export type DatePickerProps = PropsSingle | PropsRange
 
 export default function DatePicker(props: DatePickerProps) {
@@ -44,7 +46,6 @@ export default function DatePicker(props: DatePickerProps) {
                 DayButton: (dayProps) => {
                     const { day, modifiers, ...buttonProps } = dayProps
                     const { mode, selected } = props
-                    console.log("props: ", selected)
 
                     const isStart = modifiers.range_start
                     const isEnd = modifiers.range_end
@@ -156,22 +157,5 @@ export default function DatePicker(props: DatePickerProps) {
                 },
             }}
         />
-    )
-}
-
-// TODO: Move
-export function LeftChevron({ className = "w-3.5 h-3.5 fill-gray-500" }) {
-    return (
-        <svg className={className} width="24" height="24" viewBox="0 0 24 24">
-            <polygon points="16 18.112 9.81111111 12 16 5.87733333 14.0888889 4 6 12 14.0888889 20" />
-        </svg>
-    )
-}
-
-export function RightChevron({ className = "w-3.5 h-3.5 fill-gray-500" }) {
-    return (
-        <svg className={className} width="24" height="24" viewBox="0 0 24 24">
-            <polygon points="8 18.112 14.18888889 12 8 5.87733333 9.91111111 4 18 12 9.91111111 20" />
-        </svg>
     )
 }
