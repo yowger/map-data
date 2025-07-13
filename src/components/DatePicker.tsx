@@ -44,21 +44,30 @@ export default function DatePicker(props: DatePickerProps) {
                 DayButton: (dayProps) => {
                     const { day, modifiers, ...buttonProps } = dayProps
                     const { mode, selected } = props
+                    console.log("props: ", selected)
 
                     const isStart = modifiers.range_start
                     const isEnd = modifiers.range_end
                     const isMiddle = modifiers.range_middle
                     const isSelected = modifiers.selected ?? false
 
-                    const isRange = mode === "range"
                     const hasRange =
-                        selected && "from" in selected && "to" in selected
+                        mode === "range" &&
+                        selected &&
+                        "from" in selected &&
+                        "to" in selected
+                    const isSameDate =
+                        hasRange &&
+                        selected.from instanceof Date &&
+                        selected.to instanceof Date &&
+                        selected.from.toDateString() ===
+                            selected.to.toDateString()
 
                     let wrapperClassName = "cursor-pointer p-0 w-full h-full"
 
-                    if (isRange && hasRange && isStart) {
+                    if (hasRange && !isSameDate && isStart) {
                         wrapperClassName += " bg-blue-100 rounded-s-full"
-                    } else if (isRange && hasRange && isEnd) {
+                    } else if (hasRange && !isSameDate && isEnd) {
                         wrapperClassName += " bg-blue-100 rounded-e-full"
                     }
 

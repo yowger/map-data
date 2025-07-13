@@ -30,7 +30,7 @@ export default function Sidebar() {
                     <input
                         type="text"
                         placeholder="Search barangay"
-                        className="w-full ps-8 text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-teal-500 focus:ring-1 focus:border-teal-500 outline-0"
+                        className="w-full ps-8 text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:ring-1 focus:border-blue-500 outline-0"
                     />
                 </div>
             </div>
