@@ -16,7 +16,7 @@ export default function TextInput(props: TextInputProps) {
     return (
         <div className={`relative ${wrapperClassName}`}>
             {icon && (
-                <div className="absolute inset-y-0 start-0 flex items-center ps-2">
+                <div className="absolute inset-y-0 start-0 flex items-center ps-3">
                     {icon}
                 </div>
             )}
@@ -24,7 +24,7 @@ export default function TextInput(props: TextInputProps) {
             <input
                 {...inputProps}
                 className={`w-full ${
-                    icon ? "ps-8" : "ps-3"
+                    icon ? "ps-10" : "ps-3"
                 } text-gray-700 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:ring-1 focus:border-blue-500 outline-0  ${inputClassName}`}
             />
         </div>
