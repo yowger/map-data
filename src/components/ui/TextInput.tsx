@@ -25,7 +25,7 @@ export default function TextInput(props: TextInputProps) {
                 {...inputProps}
                 className={`w-full ${
                     icon ? "ps-8" : "ps-3"
-                } text-gray-700 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:ring-1 focus:border-blue-500 outline-0 ${inputClassName}`}
+                } text-gray-700 border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:ring-1 focus:border-blue-500 outline-0  ${inputClassName}`}
             />
         </div>
     )

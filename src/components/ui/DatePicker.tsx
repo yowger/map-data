@@ -99,7 +99,7 @@ export default function DatePicker(props: DatePickerProps) {
                 Dropdown: ({ options, onSelect, value, onChange }) => {
                     return (
                         <select
-                            className="w-full text-gray-500 text-base py-2 outline-0 flex pr-1 cursor-pointer"
+                            className="w-full text-gray-500 text-base py-2 outline-0 flex pr-1 cursor-pointer font-normal"
                             onChange={onChange}
                             onSelect={onSelect}
                             value={value}

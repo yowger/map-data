@@ -1,28 +1,24 @@
 import { useState } from "react"
-import DatePicker from "../components/ui/DatePicker"
 import type { DateRange } from "react-day-picker"
-import Button from "../components/ui/Button"
+
 import TextInput from "../components/ui/TextInput"
+import DateRangePicker from "../components/ui/DateRangeSelector"
 
 export default function Sidebar() {
-    const [range, setRange] = useState<DateRange>()
+    const [range, setRange] = useState<DateRange | undefined>()
 
     return (
         <div className="w-96 bg-white shadow-md">
-            <div className="p-4">
+            <div className="flex flex-col gap-4 p-4">
                 <TextInput icon={searchIcon} placeholder="Search barangay" />
-            </div>
 
-            <div className="px-4">
-                <Button
-                    value="lorem ipsum"
-                    icon={
-                        <i className="fa-solid fa-calendar-day text-gray-400" />
-                    }
+                <DateRangePicker
+                    range={range}
+                    onChange={(newRange) => {
+                        setRange(newRange)
+                    }}
                 />
             </div>
-
-            <DatePicker mode="range" selected={range} onSelect={setRange} />
 
             <h2>Barangay List</h2>
 
