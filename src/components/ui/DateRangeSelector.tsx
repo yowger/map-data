@@ -43,6 +43,7 @@ export default function DateRangeSelector({ range, onChange }: Props) {
                 value={formattedRange}
                 onClick={() => setOpen(!open)}
                 icon={<i className="fa-solid fa-calendar-day text-gray-400" />}
+                className={open ? "bg-gray-100" : ""}
             />
 
             {open && (
