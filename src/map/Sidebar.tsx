@@ -3,6 +3,7 @@ import type { DateRange } from "react-day-picker"
 
 import TextInput from "../components/ui/TextInput"
 import DateRangePicker from "../components/ui/DateRangeSelector"
+import FilterPopoverButton from "../components/ui/FilterPopOverButton"
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
@@ -18,6 +19,8 @@ export default function Sidebar() {
                         setRange(newRange)
                     }}
                 />
+
+                <FilterPopoverButton />
             </div>
 
             <h2>Barangay List</h2>
@@ -33,6 +36,9 @@ export default function Sidebar() {
         </div>
     )
 }
+
+// filter for
+// hazard, status, sort Z-A?
 
 const searchIcon = (
     <svg

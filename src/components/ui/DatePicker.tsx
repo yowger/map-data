@@ -1,3 +1,4 @@
+import "react-day-picker/dist/style.css"
 import { Children } from "react"
 import {
     DayPicker,

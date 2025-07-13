@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { format } from "date-fns"
 import { type DateRange } from "react-day-picker"
-import "react-day-picker/dist/style.css"
+
 import Button from "./Button"
 import DatePicker from "./DatePicker"
+import { useOnClickOutside } from "../../hooks/useOnClickOutside"
 
 type Props = {
     range: DateRange | undefined
@@ -18,24 +19,11 @@ export default function DateRangeSelector({ range, onChange }: Props) {
 
     const formattedRange = formatRange(range)
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(event.target as Node)
-            ) {
-                setOpen(false)
-            }
-        }
-
-        if (open) {
-            document.addEventListener("mousedown", handleClickOutside)
-        }
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [open])
+    useOnClickOutside({
+        ref: containerRef,
+        isEnabled: open,
+        onClickOutside: () => setOpen(false),
+    })
 
     return (
         <div ref={containerRef} className="relative inline-block w-full">
