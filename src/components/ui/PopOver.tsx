@@ -11,9 +11,13 @@ import {
     type Dispatch,
     type SetStateAction,
     useLayoutEffect,
-    type Ref,
 } from "react"
 import { useFocusTrap } from "../../hooks/useFocusTrap"
+import { mergeRefs } from "../../utils/mergreRefs"
+
+type ReactElementWithRef = React.ReactElement<
+    React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
+>
 
 type Position = "bottom-center" | "bottom-left" | "bottom-right"
 
@@ -23,7 +27,7 @@ type PopOverProps = {
 }
 
 type TriggerProps = {
-    children: ReactElement<HTMLAttributes<HTMLElement>>
+    children: ReactElementWithRef
 }
 
 type ContentProps = {
@@ -103,24 +107,21 @@ export default function PopOver({
 
 function Trigger({ children }: TriggerProps) {
     const { toggle, setTriggerRect } = usePopoverContext("PopOver.Trigger")
-
-    if (!isValidElement(children)) {
-        throw new Error("Trigger requires a valid React element.")
-    }
-
     const ref = useRef<HTMLElement>(null)
 
     const handleClick = () => {
         const element = ref.current
 
-        if (element == null) {
-            return
-        }
+        if (element == null) return
 
         const rect = element.getBoundingClientRect()
         setTriggerRect(rect)
 
         toggle()
+    }
+
+    if (!isValidElement(children)) {
+        throw new Error("Trigger requires a valid React element.")
     }
 
     const childrenToTriggerPopover = cloneElement(children, {
@@ -147,6 +148,8 @@ function ContentInternal({ children }: ContentProps) {
     )
     const ref = useRef<HTMLDialogElement>(null)
     const [coords, setCoords] = useState({ top: 0, left: 0 })
+    const { containerRef } = useFocusTrap<HTMLDialogElement>()
+    const mergedRef = mergeRefs(ref, containerRef)
 
     useLayoutEffect(() => {
         const element = ref.current
@@ -160,10 +163,7 @@ function ContentInternal({ children }: ContentProps) {
         const coords = getPopOverCoords(triggerRect, rect, position)
 
         setCoords(coords)
-    }, [])
-
-    const { containerRef } = useFocusTrap()
-    const mergedRef = mergeRefs(ref, containerRef)
+    }, [position, triggerRect])
 
     return (
         <dialog
@@ -184,12 +184,12 @@ function ContentInternal({ children }: ContentProps) {
 function Close({ children }: CloseProps) {
     const { close } = usePopoverContext("PopOver.Close")
 
-    if (!isValidElement(children)) {
-        throw new Error("Close requires a valid React element.")
-    }
-
     const handleClick = () => {
         close()
+    }
+
+    if (!isValidElement(children)) {
+        throw new Error("Close requires a valid React element.")
     }
 
     const childrenToClosePopover = cloneElement(children, {
@@ -231,23 +231,6 @@ function getPopOverCoords(
     }
 }
 
-function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
-    return (element: T | null) => {
-        for (const ref of refs) {
-            if (typeof ref === "function") {
-                ref(element)
-            } else if (ref && typeof ref === "object") {
-                ref.current = element
-            }
-        }
-    }
-}
-
 PopOver.Trigger = Trigger
 PopOver.Content = Content
 PopOver.Close = Close
-
-// const isTabKey = event.key === "Tab"
-// const container = containerRef.current
-
-// if (!isTabKey || !container) return
