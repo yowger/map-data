@@ -4,6 +4,7 @@ import type { DateRange } from "react-day-picker"
 import TextInput from "../components/ui/TextInput"
 import DateRangePicker from "../components/ui/DateRangeSelector"
 import FilterPopoverButton from "../components/ui/FilterPopOverButton"
+import PopOver from "../components/ui/PopOver"
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
@@ -23,6 +24,24 @@ export default function Sidebar() {
                 <FilterPopoverButton />
             </div>
 
+            <div className="px-4">
+                <PopOver>
+                    <PopOver.Trigger>
+                        <button className="p-2 border rounded-md text-sm">
+                            Click me
+                        </button>
+                    </PopOver.Trigger>
+                    <PopOver.Content>
+                        <p>Content</p>
+                        <PopOver.Close>
+                            <button className="p-2 border rounded-md text-sm">
+                                Close
+                            </button>
+                        </PopOver.Close>
+                    </PopOver.Content>
+                </PopOver>
+            </div>
+
             <h2>Barangay List</h2>
 
             <ul>
@@ -32,7 +51,38 @@ export default function Sidebar() {
                 <li>
                     <div>Aplaya</div>
                 </li>
+                <li>
+                    <div>Digos</div>
+                </li>
+                <li>
+                    <div>Aplaya</div>
+                </li>
+                <li>
+                    <div>Digos</div>
+                </li>
+                <li>
+                    <div>Aplaya</div>
+                </li>
             </ul>
+
+            <FilterPopoverButton />
+            <div className="px-4">
+                <PopOver>
+                    <PopOver.Trigger>
+                        <button className="p-2 border rounded-md text-sm">
+                            Click me
+                        </button>
+                    </PopOver.Trigger>
+                    <PopOver.Content>
+                        <p>Content</p>
+                        <PopOver.Close>
+                            <button className="p-2 border rounded-md text-sm">
+                                Close
+                            </button>
+                        </PopOver.Close>
+                    </PopOver.Content>
+                </PopOver>
+            </div>
         </div>
     )
 }
