@@ -21,7 +21,7 @@ export default function Sidebar() {
                     }}
                 />
 
-                <FilterPopoverButton />
+                {/* <FilterPopoverButton /> */}
             </div>
 
             <div className="px-4">
@@ -32,7 +32,10 @@ export default function Sidebar() {
                         </button>
                     </PopOver.Trigger>
                     <PopOver.Content>
-                        <p>Content</p>
+                        <div className="border p-4">
+                            <p>Content</p>
+                            <input type="text" className="border rounded-md" />
+                        </div>
                         <PopOver.Close>
                             <button className="p-2 border rounded-md text-sm">
                                 Close
@@ -66,7 +69,7 @@ export default function Sidebar() {
             </ul>
 
             <FilterPopoverButton />
-            <div className="px-4">
+            <div className="px-4 justify-end flex">
                 <PopOver>
                     <PopOver.Trigger>
                         <button className="p-2 border rounded-md text-sm">
@@ -74,7 +77,9 @@ export default function Sidebar() {
                         </button>
                     </PopOver.Trigger>
                     <PopOver.Content>
-                        <p>Content</p>
+                        <div className="border p-4">
+                            <p>Content</p>
+                        </div>
                         <PopOver.Close>
                             <button className="p-2 border rounded-md text-sm">
                                 Close

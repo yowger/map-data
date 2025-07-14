@@ -11,7 +11,9 @@ import {
     type Dispatch,
     type SetStateAction,
     useLayoutEffect,
+    type Ref,
 } from "react"
+import { useFocusTrap } from "../../hooks/useFocusTrap"
 
 type Position = "bottom-center" | "bottom-left" | "bottom-right"
 
@@ -154,17 +156,19 @@ function ContentInternal({ children }: ContentProps) {
         }
 
         const rect = element.getBoundingClientRect()
-        console.log("🚀 ~ useLayoutEffect ~ triggerRect:", triggerRect)
-        console.log("🚀 ~ useLayoutEffect ~ rect:", rect)
 
         const coords = getPopOverCoords(triggerRect, rect, position)
+
         setCoords(coords)
     }, [])
+
+    const { containerRef } = useFocusTrap()
+    const mergedRef = mergeRefs(ref, containerRef)
 
     return (
         <dialog
             open={true}
-            ref={ref}
+            ref={mergedRef}
             style={{
                 position: "fixed",
                 left: `${coords.left}px`,
@@ -227,6 +231,23 @@ function getPopOverCoords(
     }
 }
 
+function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): Ref<T> {
+    return (element: T | null) => {
+        for (const ref of refs) {
+            if (typeof ref === "function") {
+                ref(element)
+            } else if (ref && typeof ref === "object") {
+                ref.current = element
+            }
+        }
+    }
+}
+
 PopOver.Trigger = Trigger
 PopOver.Content = Content
 PopOver.Close = Close
+
+// const isTabKey = event.key === "Tab"
+// const container = containerRef.current
+
+// if (!isTabKey || !container) return
