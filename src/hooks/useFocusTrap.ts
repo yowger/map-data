@@ -3,14 +3,23 @@ import { useRef, useEffect, useCallback, type RefObject } from "react"
 const FOCUSABLE_QUERY =
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
-export function useFocusTrap<T extends HTMLElement = HTMLElement>(): {
+interface UseFocusTrapProps {
+    enabled?: boolean
+    returnFocusOnClose?: boolean
+}
+
+export function useFocusTrap<T extends HTMLElement = HTMLElement>({
+    enabled = true,
+    returnFocusOnClose = true,
+}: UseFocusTrapProps): {
     containerRef: RefObject<T | null>
 } {
     const containerRef = useRef<T>(null)
+    const lastFocusedElement = useRef<HTMLElement | null>(null)
 
     const handleKeyDown = useCallback((event: KeyboardEvent) => {
-        const isTabKey = event.key === "Tab"
         const container = containerRef.current
+        const isTabKey = event.key === "Tab"
 
         if (!isTabKey || !container) return
 
@@ -37,8 +46,9 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(): {
     useEffect(() => {
         const container = containerRef.current
 
-        if (!container) return
+        if (!container || !enabled) return
 
+        lastFocusedElement.current = document.activeElement as HTMLElement
         const focusableElements = container.querySelectorAll<T>(FOCUSABLE_QUERY)
 
         focusableElements[0]?.focus()
@@ -47,8 +57,12 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(): {
 
         return () => {
             document.removeEventListener("keydown", handleKeyDown)
+
+            if (returnFocusOnClose === true && lastFocusedElement.current) {
+                lastFocusedElement.current?.focus()
+            }
         }
-    }, [handleKeyDown])
+    }, [enabled, handleKeyDown, returnFocusOnClose])
 
     return {
         containerRef,

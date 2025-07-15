@@ -13,7 +13,7 @@ import {
     useLayoutEffect,
 } from "react"
 import { useFocusTrap } from "../../hooks/useFocusTrap"
-import { mergeRefs } from "../../utils/mergreRefs"
+import { mergeRefs } from "../../utils/mergeRefs"
 
 type ReactElementWithRef = React.ReactElement<
     React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
@@ -143,12 +143,16 @@ function Content({ children }: ContentProps) {
 }
 
 function ContentInternal({ children }: ContentProps) {
-    const { position, triggerRect } = usePopoverContext(
+    const { isOpen, position, triggerRect } = usePopoverContext(
         "PopOver.ContentInternal"
     )
     const ref = useRef<HTMLDialogElement>(null)
     const [coords, setCoords] = useState({ top: 0, left: 0 })
-    const { containerRef } = useFocusTrap<HTMLDialogElement>()
+
+    const { containerRef } = useFocusTrap<HTMLDialogElement>({
+        enabled: isOpen,
+        returnFocusOnClose: true,
+    })
     const mergedRef = mergeRefs(ref, containerRef)
 
     useLayoutEffect(() => {
