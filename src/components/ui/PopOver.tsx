@@ -178,6 +178,7 @@ function ContentInternal({ children }: ContentProps) {
         )
 
         const needsScroll = rect.height > availableHeight
+
         setMaxHeight(needsScroll ? availableHeight : undefined)
 
         setCoords({
@@ -195,7 +196,7 @@ function ContentInternal({ children }: ContentProps) {
                 top: `${coords.top}px`,
                 maxHeight: maxHeight ? `${maxHeight}px` : undefined,
             }}
-            className="fixed m-0 z-[500] overflow-y-auto"
+            className="fixed m-0 z-[500] overflow-y-auto border border-gray-300 rounded-md"
         >
             {children}
         </dialog>
@@ -242,8 +243,13 @@ function getPopOverCoords(
             const shouldShowAbove =
                 popoverRect.height > spaceBelow && spaceAbove > spaceBelow
 
+            const availableHeight = shouldShowAbove
+                ? triggerRect.top - spacing
+                : window.innerHeight -
+                  (triggerRect.top + triggerRect.height + spacing)
+
             const top = shouldShowAbove
-                ? triggerRect.top - spacing - popoverRect.height
+                ? triggerRect.top - spacing - availableHeight
                 : triggerRect.top + triggerRect.height + spacing
 
             const left = Math.max(
@@ -252,11 +258,6 @@ function getPopOverCoords(
                     popoverRect.width / 2,
                 minLeftPadding
             )
-
-            const availableHeight = shouldShowAbove
-                ? triggerRect.top - spacing
-                : window.innerHeight -
-                  (triggerRect.top + triggerRect.height + spacing)
 
             return { top, left, availableHeight }
         }
