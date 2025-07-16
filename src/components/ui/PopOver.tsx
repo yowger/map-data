@@ -2,6 +2,7 @@
     TODO: 
         create auto flipping
         create get window size, pos on change 
+        keyboard event (ESC) to exit
 */
 
 import {
