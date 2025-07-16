@@ -147,6 +147,7 @@ function Content({ children }: ContentProps) {
 
 function ContentInternal({ children }: ContentProps) {
     const [coords, setCoords] = useState({ top: 0, left: 0 })
+    const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined)
     const { triggerRef, isOpen, position, triggerRect, close } =
         usePopoverContext("PopOver.ContentInternal")
 
@@ -170,9 +171,19 @@ function ContentInternal({ children }: ContentProps) {
 
         const rect = element.getBoundingClientRect()
 
-        const coords = getPopOverCoords(triggerRect, rect, position)
+        const { left, top, availableHeight } = getPopOverCoords(
+            triggerRect,
+            rect,
+            position
+        )
 
-        setCoords(coords)
+        const needsScroll = rect.height > availableHeight
+        setMaxHeight(needsScroll ? availableHeight : undefined)
+
+        setCoords({
+            left,
+            top,
+        })
     }, [position, triggerRect])
 
     return (
@@ -182,8 +193,9 @@ function ContentInternal({ children }: ContentProps) {
             style={{
                 left: `${coords.left}px`,
                 top: `${coords.top}px`,
+                maxHeight: maxHeight ? `${maxHeight}px` : undefined,
             }}
-            className="fixed m-0 z-[500]"
+            className="fixed m-0 z-[500] overflow-y-auto"
         >
             {children}
         </dialog>
@@ -221,7 +233,18 @@ function getPopOverCoords(
             const spacing = 10
             const minLeftPadding = 10
 
-            let top = triggerRect.top + triggerRect.height + spacing
+            const spaceBelow =
+                window.innerHeight -
+                (triggerRect.top + triggerRect.height) -
+                spacing
+            const spaceAbove = triggerRect.top - spacing
+
+            const shouldShowAbove =
+                popoverRect.height > spaceBelow && spaceAbove > spaceBelow
+
+            const top = shouldShowAbove
+                ? triggerRect.top - spacing - popoverRect.height
+                : triggerRect.top + triggerRect.height + spacing
 
             const left = Math.max(
                 triggerRect.left +
@@ -230,14 +253,12 @@ function getPopOverCoords(
                 minLeftPadding
             )
 
-            const wouldOverflowBottom =
-                top + popoverRect.height > window.innerHeight
+            const availableHeight = shouldShowAbove
+                ? triggerRect.top - spacing
+                : window.innerHeight -
+                  (triggerRect.top + triggerRect.height + spacing)
 
-            if (wouldOverflowBottom) {
-                top = triggerRect.top - spacing - popoverRect.height
-            }
-
-            return { top, left }
+            return { top, left, availableHeight }
         }
     }
 }
