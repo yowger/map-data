@@ -34,7 +34,7 @@ export default function DatePicker(props: DatePickerProps) {
                     }),
             }}
             classNames={{
-                root: `${defaultClassNames.root} rounded p-2 absolute z-50 bg-white border border-gray-300 shadow-xs`,
+                root: `${defaultClassNames.root} rounded p-2 bg-white`,
                 weekday: "font-normal text-gray-400",
                 selected: `text-white`,
                 day: `group w-9 h-9`,
