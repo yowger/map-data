@@ -3,11 +3,11 @@ import type { DateRange } from "react-day-picker"
 
 import TextInput from "../components/ui/TextInput"
 import DateRangePicker from "../components/ui/DateRangeSelector"
-import FilterPopoverButton from "../components/ui/FilterPopOverButton"
 import PopOver from "../components/ui/PopOver"
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
+    const [selectedHazards, setSelectedHazards] = useState<string[]>([])
 
     return (
         <div className="w-96 bg-white shadow-md">
@@ -20,21 +20,83 @@ export default function Sidebar() {
                         setRange(newRange)
                     }}
                 />
-
-                {/* <FilterPopoverButton /> */}
             </div>
 
             <div className="px-4">
                 <PopOver>
                     <PopOver.Trigger>
-                        <button className="p-2 border rounded-md text-sm">
-                            Click me
+                        <button className="px-3.5 py-1.5 bg-gray-200 rounded-md text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-300">
+                            <span className="mr-1.5">Category</span>
+                            <i className="fa-solid fa-caret-down" />
                         </button>
                     </PopOver.Trigger>
                     <PopOver.Content>
-                        <div className="border p-4">
-                            <p>Content</p>
-                            <input type="text" className="border rounded-md" />
+                        <div className="py-3 flex flex-col space-y-4 w-48 shadow-md overflow-auto">
+                            <div className="px-4">
+                                <div className="flex flex-col gap-1 ">
+                                    <div>
+                                        {[
+                                            "Flood",
+                                            "Earthquake",
+                                            "Fire",
+                                            "Landslide",
+                                            "Tsunami",
+                                            "Typhoon",
+                                            "Storm Surge",
+                                            "Volcanic Eruption",
+                                            "Drought",
+                                            "Extreme Heat",
+                                            "Strong Winds",
+                                            "Hailstorm",
+                                            "Pandemic",
+                                            "Tornado",
+                                            "Chemical Spill",
+                                        ].map((hazard) => (
+                                            <label
+                                                key={hazard}
+                                                className="flex items-center gap-2 cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value={hazard}
+                                                    checked={selectedHazards.includes(
+                                                        hazard
+                                                    )}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value
+                                                        setSelectedHazards(
+                                                            (prev) =>
+                                                                prev.includes(
+                                                                    value
+                                                                )
+                                                                    ? prev.filter(
+                                                                          (h) =>
+                                                                              h !==
+                                                                              value
+                                                                      )
+                                                                    : [
+                                                                          ...prev,
+                                                                          value,
+                                                                      ]
+                                                        )
+                                                    }}
+                                                />
+                                                {hazard}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end px-4">
+                                <button className="text-sm px-2 py-1 cursor-pointer font-medium text-gray-700">
+                                    Clear
+                                </button>
+                                <button className="text-sm px-2 py-1 cursor-pointer font-medium text-blue-500">
+                                    Done
+                                </button>
+                            </div>
                         </div>
                     </PopOver.Content>
                 </PopOver>
@@ -42,38 +104,102 @@ export default function Sidebar() {
 
             <h2>Barangay List</h2>
 
-            <ul>
-                <li>
-                    <div>Digos</div>
-                </li>
-                <li>
-                    <div>Aplaya</div>
-                </li>
-                <li>
-                    <div>Digos</div>
-                </li>
-                <li>
-                    <div>Aplaya</div>
-                </li>
-                <li>
-                    <div>Digos</div>
-                </li>
-                <li>
-                    <div>Aplaya</div>
-                </li>
-            </ul>
+            <div className="px-2">
+                <ul>
+                    <li>
+                        <div>Digos</div>
+                    </li>
+                    <li>
+                        <div>Aplaya</div>
+                    </li>
+                    <li>
+                        <div>Digos</div>
+                    </li>
+                    <li>
+                        <div>Aplaya</div>
+                    </li>
+                    <li>
+                        <div>Digos</div>
+                    </li>
+                    <li>
+                        <div>Aplaya</div>
+                    </li>
+                </ul>
 
-            <FilterPopoverButton />
-            <div className="px-4 justify-end flex">
                 <PopOver>
                     <PopOver.Trigger>
-                        <button className="p-2 border rounded-md text-sm">
-                            Click me
+                        <button className="px-3.5 py-1.5 bg-gray-200 rounded-md text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-300">
+                            <span className="mr-1.5">Category</span>
+                            <i className="fa-solid fa-caret-down" />
                         </button>
                     </PopOver.Trigger>
                     <PopOver.Content>
-                        <div className="border p-4">
-                            <p>Content</p>
+                        <div className="py-3 flex flex-col border border-gray-300 rounded-md space-y-4 w-48 shadow-md overflow-auto">
+                            <div className="px-4">
+                                <div className="flex flex-col gap-1 ">
+                                    <div>
+                                        {[
+                                            "Flood",
+                                            "Earthquake",
+                                            "Fire",
+                                            "Landslide",
+                                            "Tsunami",
+                                            "Typhoon",
+                                            "Storm Surge",
+                                            "Volcanic Eruption",
+                                            "Drought",
+                                            "Extreme Heat",
+                                            "Strong Winds",
+                                            "Hailstorm",
+                                            "Pandemic",
+                                            "Tornado",
+                                            "Chemical Spill",
+                                        ].map((hazard) => (
+                                            <label
+                                                key={hazard}
+                                                className="flex items-center gap-2 cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value={hazard}
+                                                    checked={selectedHazards.includes(
+                                                        hazard
+                                                    )}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value
+                                                        setSelectedHazards(
+                                                            (prev) =>
+                                                                prev.includes(
+                                                                    value
+                                                                )
+                                                                    ? prev.filter(
+                                                                          (h) =>
+                                                                              h !==
+                                                                              value
+                                                                      )
+                                                                    : [
+                                                                          ...prev,
+                                                                          value,
+                                                                      ]
+                                                        )
+                                                    }}
+                                                />
+                                                {hazard}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end px-4">
+                                <button className="text-sm px-2 py-1 cursor-pointer font-medium text-gray-700">
+                                    Clear
+                                </button>
+                                <button className="text-sm px-2 py-1 cursor-pointer font-medium text-blue-500">
+                                    Done
+                                </button>
+                            </div>
                         </div>
                     </PopOver.Content>
                 </PopOver>
