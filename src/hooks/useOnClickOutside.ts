@@ -10,10 +10,15 @@ export function useOnClickOutside<T extends HTMLElement>({
     ref,
     isEnabled,
     onClickOutside,
-}: UseOnClickOutsideProps<T>) {
+}: UseOnClickOutsideProps<T>): void {
     useEffect(() => {
+        if (!isEnabled) return
+
         function handleClickOutside(event: MouseEvent) {
-            if (ref.current && !ref.current.contains(event.target as Node)) {
+            const element = ref.current
+            const hasClickedElement = element?.contains(event.target as Node)
+
+            if (!hasClickedElement) {
                 onClickOutside()
             }
         }

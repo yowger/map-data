@@ -4,12 +4,12 @@ const FOCUSABLE_QUERY =
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 interface UseFocusTrapProps {
-    enabled?: boolean
+    isEnabled?: boolean
     returnFocusOnClose?: boolean
 }
 
 export function useFocusTrap<T extends HTMLElement = HTMLElement>({
-    enabled = true,
+    isEnabled: enabled = true,
     returnFocusOnClose = true,
 }: UseFocusTrapProps): {
     containerRef: RefObject<T | null>
@@ -58,7 +58,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>({
         return () => {
             document.removeEventListener("keydown", handleKeyDown)
 
-            if (returnFocusOnClose === true && lastFocusedElement.current) {
+            if (returnFocusOnClose && lastFocusedElement.current) {
                 lastFocusedElement.current?.focus()
             }
         }

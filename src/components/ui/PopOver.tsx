@@ -11,9 +11,11 @@ import {
     type Dispatch,
     type SetStateAction,
     useLayoutEffect,
+    type MouseEvent,
 } from "react"
 import { useFocusTrap } from "../../hooks/useFocusTrap"
 import { mergeRefs } from "../../utils/mergeRefs"
+import { useOnClickOutside } from "../../hooks/useOnClickOutside"
 
 type ReactElementWithRef = React.ReactElement<
     React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
@@ -109,7 +111,7 @@ function Trigger({ children }: TriggerProps) {
     const { toggle, setTriggerRect } = usePopoverContext("PopOver.Trigger")
     const ref = useRef<HTMLElement>(null)
 
-    const handleClick = () => {
+    const handleClick = (event: MouseEvent) => {
         const element = ref.current
 
         if (element == null) return
@@ -118,6 +120,8 @@ function Trigger({ children }: TriggerProps) {
         setTriggerRect(rect)
 
         toggle()
+
+        event.stopPropagation()
     }
 
     if (!isValidElement(children)) {
@@ -135,25 +139,28 @@ function Trigger({ children }: TriggerProps) {
 function Content({ children }: ContentProps) {
     const { isOpen } = usePopoverContext("PopOver.Content")
 
-    if (!isOpen) {
-        return null
-    }
+    if (!isOpen) return null
 
     return <ContentInternal>{children}</ContentInternal>
 }
 
 function ContentInternal({ children }: ContentProps) {
-    const { isOpen, position, triggerRect } = usePopoverContext(
+    const [coords, setCoords] = useState({ top: 0, left: 0 })
+    const { close, isOpen, position, triggerRect } = usePopoverContext(
         "PopOver.ContentInternal"
     )
-    const ref = useRef<HTMLDialogElement>(null)
-    const [coords, setCoords] = useState({ top: 0, left: 0 })
 
+    const ref = useRef<HTMLDialogElement>(null)
     const { containerRef } = useFocusTrap<HTMLDialogElement>({
-        enabled: isOpen,
+        isEnabled: isOpen,
         returnFocusOnClose: true,
     })
     const mergedRef = mergeRefs(ref, containerRef)
+    useOnClickOutside<HTMLDialogElement>({
+        ref,
+        isEnabled: isOpen,
+        onClickOutside: () => close(),
+    })
 
     useLayoutEffect(() => {
         const element = ref.current
