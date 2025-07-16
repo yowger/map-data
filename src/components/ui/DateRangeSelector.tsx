@@ -1,10 +1,10 @@
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { format } from "date-fns"
 import { type DateRange } from "react-day-picker"
 
 import Button from "./Button"
 import DatePicker from "./DatePicker"
-import { useOnClickOutside } from "../../hooks/useOnClickOutside"
+import PopOver from "./PopOver"
 
 type Props = {
     range: DateRange | undefined
@@ -15,51 +15,45 @@ const DEFAULT_TEXT = "Select date"
 
 export default function DateRangeSelector({ range, onChange }: Props) {
     const [open, setOpen] = useState(false)
-    const containerRef = useRef<HTMLDivElement>(null)
 
     const formattedRange = formatRange(range)
 
-    useOnClickOutside({
-        ref: containerRef,
-        isEnabled: open,
-        onClickOutside: () => setOpen(false),
-    })
-
     return (
-        <div ref={containerRef} className="relative inline-block w-full">
-            <Button
-                value={formattedRange}
-                onClick={() => setOpen(!open)}
-                icon={<i className="fa-solid fa-calendar-day text-gray-400" />}
-                className={open ? "bg-gray-100" : ""}
-            />
+        <PopOver>
+            <PopOver.Trigger>
+                <Button
+                    value={formattedRange}
+                    onClick={() => setOpen(!open)}
+                    icon={
+                        <i className="fa-solid fa-calendar-day text-gray-400" />
+                    }
+                    className={open ? "bg-gray-100" : ""}
+                />
+            </PopOver.Trigger>
+            <PopOver.Content>
+                <DatePicker
+                    mode="range"
+                    selected={range}
+                    onSelect={(newRange) => {
+                        const from = newRange?.from
+                        const to = newRange?.to
 
-            {open && (
-                <div className="absolute z-50 mt-2 shadow-md">
-                    <DatePicker
-                        mode="range"
-                        selected={range}
-                        onSelect={(newRange) => {
-                            const from = newRange?.from
-                            const to = newRange?.to
+                        const isRangeComplete =
+                            from &&
+                            to &&
+                            from instanceof Date &&
+                            to instanceof Date &&
+                            from.getTime() !== to.getTime()
 
-                            const isRangeComplete =
-                                from &&
-                                to &&
-                                from instanceof Date &&
-                                to instanceof Date &&
-                                from.getTime() !== to.getTime()
+                        onChange?.(newRange)
 
-                            onChange?.(newRange)
-
-                            if (isRangeComplete) {
-                                setOpen(false)
-                            }
-                        }}
-                    />
-                </div>
-            )}
-        </div>
+                        if (isRangeComplete) {
+                            setOpen(false)
+                        }
+                    }}
+                />
+            </PopOver.Content>
+        </PopOver>
     )
 }
 

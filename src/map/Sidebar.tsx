@@ -36,11 +36,6 @@ export default function Sidebar() {
                             <p>Content</p>
                             <input type="text" className="border rounded-md" />
                         </div>
-                        <PopOver.Close>
-                            <button className="p-2 border rounded-md text-sm">
-                                Close
-                            </button>
-                        </PopOver.Close>
                     </PopOver.Content>
                 </PopOver>
             </div>
@@ -80,11 +75,6 @@ export default function Sidebar() {
                         <div className="border p-4">
                             <p>Content</p>
                         </div>
-                        <PopOver.Close>
-                            <button className="p-2 border rounded-md text-sm">
-                                Close
-                            </button>
-                        </PopOver.Close>
                     </PopOver.Content>
                 </PopOver>
             </div>

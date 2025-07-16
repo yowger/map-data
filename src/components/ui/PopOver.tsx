@@ -1,3 +1,9 @@
+/*
+    TODO: 
+        create auto flipping
+        create get window size, pos on change 
+*/
+
 import {
     type ReactNode,
     type ReactElement,
@@ -12,10 +18,20 @@ import {
     type SetStateAction,
     useLayoutEffect,
     type MouseEvent,
+    type RefObject,
 } from "react"
 import { useFocusTrap } from "../../hooks/useFocusTrap"
 import { mergeRefs } from "../../utils/mergeRefs"
 import { useOnClickOutside } from "../../hooks/useOnClickOutside"
+
+const DEFAULT_POSITION = "bottom-center"
+
+const DEFAULT_TRIGGER_RECT = {
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+}
 
 type ReactElementWithRef = React.ReactElement<
     React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
@@ -44,32 +60,15 @@ type PickedRect = Pick<DOMRect, "left" | "top" | "width" | "height">
 
 type PopoverContextType = {
     isOpen: boolean
-    toggle: () => void
-    close: () => void
     position: Position
     triggerRect: PickedRect
+    closeButtonRef: RefObject<HTMLElement | null>
+    close: () => void
     setTriggerRect: Dispatch<SetStateAction<PickedRect>>
+    toggle: () => void
 }
 
-const DEFAULT_POSITION = "bottom-center"
-
-const DEFAULT_TRIGGER_RECT = {
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-}
-
-const PopoverContext = createContext<PopoverContextType | null>({
-    isOpen: false,
-    toggle: () => {},
-    close: () => {},
-    position: DEFAULT_POSITION,
-    triggerRect: DEFAULT_TRIGGER_RECT,
-    setTriggerRect: () => {
-        throw new Error("setTriggerRect should be used under provider")
-    },
-})
+const PopoverContext = createContext<PopoverContextType | null>(null)
 
 function usePopoverContext(component: string) {
     const popOverContext = useContext(PopoverContext)
@@ -87,17 +86,19 @@ export default function PopOver({
 }: PopOverProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [triggerRect, setTriggerRect] = useState(DEFAULT_TRIGGER_RECT)
+    const closeButtonRef = useRef<HTMLElement>(null)
 
     const toggle = () => setIsOpen((prev) => !prev)
     const close = () => setIsOpen(false)
 
     const contextValue: PopoverContextType = {
+        closeButtonRef,
         isOpen,
-        toggle,
-        close,
         position,
         triggerRect,
+        close,
         setTriggerRect,
+        toggle,
     }
 
     return (
@@ -108,20 +109,18 @@ export default function PopOver({
 }
 
 function Trigger({ children }: TriggerProps) {
-    const { toggle, setTriggerRect } = usePopoverContext("PopOver.Trigger")
-    const ref = useRef<HTMLElement>(null)
+    const { closeButtonRef, toggle, setTriggerRect } =
+        usePopoverContext("PopOver.Trigger")
 
     const handleClick = (event: MouseEvent) => {
-        const element = ref.current
+        event.stopPropagation()
 
-        if (element == null) return
+        if (!closeButtonRef.current) return
 
-        const rect = element.getBoundingClientRect()
+        const rect = closeButtonRef.current.getBoundingClientRect()
         setTriggerRect(rect)
 
         toggle()
-
-        event.stopPropagation()
     }
 
     if (!isValidElement(children)) {
@@ -130,7 +129,7 @@ function Trigger({ children }: TriggerProps) {
 
     const childrenToTriggerPopover = cloneElement(children, {
         onClick: handleClick,
-        ref,
+        ref: closeButtonRef,
     })
 
     return childrenToTriggerPopover
@@ -146,9 +145,8 @@ function Content({ children }: ContentProps) {
 
 function ContentInternal({ children }: ContentProps) {
     const [coords, setCoords] = useState({ top: 0, left: 0 })
-    const { close, isOpen, position, triggerRect } = usePopoverContext(
-        "PopOver.ContentInternal"
-    )
+    const { closeButtonRef, isOpen, position, triggerRect, close } =
+        usePopoverContext("PopOver.ContentInternal")
 
     const ref = useRef<HTMLDialogElement>(null)
     const { containerRef } = useFocusTrap<HTMLDialogElement>({
@@ -159,15 +157,16 @@ function ContentInternal({ children }: ContentProps) {
     useOnClickOutside<HTMLDialogElement>({
         ref,
         isEnabled: isOpen,
+        excludeRef: closeButtonRef.current
+            ? (closeButtonRef as RefObject<HTMLElement>)
+            : undefined,
         onClickOutside: () => close(),
     })
 
     useLayoutEffect(() => {
         const element = ref.current
 
-        if (element == null) {
-            return
-        }
+        if (element == null) return
 
         const rect = element.getBoundingClientRect()
 
@@ -181,11 +180,10 @@ function ContentInternal({ children }: ContentProps) {
             open={true}
             ref={mergedRef}
             style={{
-                position: "fixed",
                 left: `${coords.left}px`,
                 top: `${coords.top}px`,
-                margin: 0,
             }}
+            className="fixed m-0 z-[500]"
         >
             {children}
         </dialog>
@@ -195,7 +193,9 @@ function ContentInternal({ children }: ContentProps) {
 function Close({ children }: CloseProps) {
     const { close } = usePopoverContext("PopOver.Close")
 
-    const handleClick = () => {
+    const handleClick = (event: MouseEvent) => {
+        event.stopPropagation()
+
         close()
     }
 
