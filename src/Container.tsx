@@ -80,7 +80,7 @@ export default function Container() {
     }
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-hidden">
             {/* <aside className="w-96 bg-white shadow overflow-y-auto p-4">
                 {sidebarView === "list" && (
                     <BarangayListView

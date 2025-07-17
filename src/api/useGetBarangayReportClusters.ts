@@ -1,7 +1,7 @@
 import { QueryClient, useQuery } from "@tanstack/react-query"
-import axios from "axios"
 
 import type { BBox, ClusterFeature } from "../types/map"
+import { axiosClient } from "../services/axios"
 
 const CLUSTER_STALE_TIME = 1000 * 60 * 5
 const CLUSTER_KEY = "reportClusters"
@@ -30,8 +30,8 @@ export function getReportClusters(
 ): Promise<ClusterFeature[]> {
     const bboxParam = bbox.join(",")
 
-    return axios
-        .get("http://localhost:3000/api/v1/reports/clusters", {
+    return axiosClient
+        .get("/v1/reports/clusters", {
             params: { bbox: bboxParam, zoom },
         })
         .then((result) => {

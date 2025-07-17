@@ -171,7 +171,7 @@ function ContentInternal({ children }: ContentProps) {
 
         const rect = element.getBoundingClientRect()
 
-        const { left, top, availableHeight } = getPopOverCoords(
+        const { left, top, availableHeight } = calculateCoordsAndSize(
             triggerRect,
             rect,
             position
@@ -196,7 +196,7 @@ function ContentInternal({ children }: ContentProps) {
                 top: `${coords.top}px`,
                 maxHeight: maxHeight ? `${maxHeight}px` : undefined,
             }}
-            className="fixed m-0 z-[500] overflow-y-auto border border-gray-300 rounded-md"
+            className="fixed m-0 z-[500] overflow-y-auto border border-gray-300 rounded-md shadow-sm"
         >
             {children}
         </dialog>
@@ -223,7 +223,8 @@ function Close({ children }: CloseProps) {
     return childrenToClosePopover
 }
 
-function getPopOverCoords(
+// TODO: do other positions
+function calculateCoordsAndSize(
     triggerRect: PickedRect,
     popoverRect: PickedRect,
     position: Position

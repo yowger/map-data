@@ -62,12 +62,15 @@ export function StatusFilterDropdown({
                         >
                             Clear
                         </button>
-                        <button
-                            className="text-sm px-2 py-1 cursor-pointer font-medium text-blue-500"
-                            onClick={onDone}
-                        >
-                            Done
-                        </button>
+
+                        <PopOver.Close>
+                            <button
+                                className="text-sm px-2 py-1 cursor-pointer font-medium text-blue-500"
+                                onClick={onDone}
+                            >
+                                Done
+                            </button>
+                        </PopOver.Close>
                     </div>
                 </div>
             </PopOver.Content>

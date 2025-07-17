@@ -1,11 +1,13 @@
 import { useState } from "react"
 import type { DateRange } from "react-day-picker"
 
+import { useBarangaysWithReports } from "../api/useGetBarangayWithReports"
 import TextInput from "../components/ui/TextInput"
 import DateRangePicker from "../components/ui/DateRangeSelector"
-import PopOver from "../components/ui/PopOver"
+// import PopOver from "../components/ui/PopOver"
 import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
+import { timeAgo } from "../utils/time"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -29,12 +31,18 @@ const STATUS_OPTIONS = ["Verified", "Unverified", "Spam", "Archived"]
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
-    const [selectedHazards, setSelectedHazards] = useState<string[]>([])
+    // const [selectedHazards, setSelectedHazards] = useState<string[]>([])
     const [selectedEvents, setSelectedEvents] = useState<string[]>([])
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
 
+    const {
+        data: barangays,
+        isLoading: barangaysIsLoading,
+        error: barangaysIsError,
+    } = useBarangaysWithReports()
+
     return (
-        <div className="w-96 bg-white shadow-md">
+        <aside className="w-[27rem] bg-white shadow-lg h-full flex flex-col">
             <div className="flex flex-col gap-4 p-4">
                 <TextInput icon={searchIcon} placeholder="Search barangay" />
 
@@ -64,109 +72,71 @@ export default function Sidebar() {
                 />
             </div>
 
-            <h2>Barangay List</h2>
-
-            <div className="px-2">
-                <ul>
-                    <li>
-                        <div>Digos</div>
-                    </li>
-                    <li>
-                        <div>Aplaya</div>
-                    </li>
-                    <li>
-                        <div>Digos</div>
-                    </li>
-                    <li>
-                        <div>Aplaya</div>
-                    </li>
-                    <li>
-                        <div>Digos</div>
-                    </li>
-                    <li>
-                        <div>Aplaya</div>
-                    </li>
-                </ul>
-
-                <PopOver>
-                    <PopOver.Trigger>
-                        <button className="px-3.5 py-1.5 bg-gray-200 rounded-md text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-300">
-                            <span className="mr-1.5">Category</span>
-                            <i className="fa-solid fa-caret-down" />
-                        </button>
-                    </PopOver.Trigger>
-                    <PopOver.Content>
-                        <div className="py-3 flex flex-col border border-gray-300 rounded-md space-y-4 w-48 shadow-md overflow-auto">
-                            <div className="px-4">
-                                <div className="flex flex-col gap-1 ">
-                                    <div>
-                                        {[
-                                            "Flood",
-                                            "Earthquake",
-                                            "Fire",
-                                            "Landslide",
-                                            "Tsunami",
-                                            "Typhoon",
-                                            "Storm Surge",
-                                            "Volcanic Eruption",
-                                            "Drought",
-                                            "Extreme Heat",
-                                            "Strong Winds",
-                                            "Hailstorm",
-                                            "Pandemic",
-                                            "Tornado",
-                                            "Chemical Spill",
-                                        ].map((hazard) => (
-                                            <label
-                                                key={hazard}
-                                                className="flex items-center gap-2 cursor-pointer"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    value={hazard}
-                                                    checked={selectedHazards.includes(
-                                                        hazard
-                                                    )}
-                                                    onChange={(e) => {
-                                                        const value =
-                                                            e.target.value
-                                                        setSelectedHazards(
-                                                            (prev) =>
-                                                                prev.includes(
-                                                                    value
-                                                                )
-                                                                    ? prev.filter(
-                                                                          (h) =>
-                                                                              h !==
-                                                                              value
-                                                                      )
-                                                                    : [
-                                                                          ...prev,
-                                                                          value,
-                                                                      ]
-                                                        )
-                                                    }}
-                                                />
-                                                {hazard}
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end px-4">
-                                <button className="text-sm px-2 py-1 cursor-pointer font-medium text-gray-700">
-                                    Clear
-                                </button>
-                                <button className="text-sm px-2 py-1 cursor-pointer font-medium text-blue-500">
-                                    Done
-                                </button>
-                            </div>
-                        </div>
-                    </PopOver.Content>
-                </PopOver>
+            <div className="flex items-center my-4 mx-4">
+                <h2 className="text-xl">Results</h2>
             </div>
-        </div>
+
+            <section className="overflow-auto flex-grow">
+                {barangaysIsLoading ? (
+                    <div className="text-gray-500 text-sm">
+                        Loading barangays...
+                    </div>
+                ) : barangaysIsError ? (
+                    <div className="text-red-500 text-sm">
+                        Failed to load data.
+                    </div>
+                ) : barangays?.length === 0 ? (
+                    <div className="text-gray-500 text-sm">
+                        No results found.
+                    </div>
+                ) : (
+                    <ul className="">
+                        {barangays?.map((barangay) => (
+                            <li
+                                key={barangay.id}
+                                className="p-4 hover:bg-gray-50 border-b border-gray-300"
+                            >
+                                <div className="text-lg font-medium tracking-[.2px] text-gray-800">
+                                    {barangay.name}
+                                </div>
+
+                                <div className="">
+                                    <h3 className="text-gray-700 hover:text-gray-900">Recent reports</h3>
+
+                                    <div className="flex flex-col">
+                                        {barangay.recentReports
+                                            .slice(0, 2)
+                                            .map((report, index) => (
+                                                <p className="text-sm text-gray-700 hover:text-gray-900">
+                                                    {report.type} •{" "}
+                                                    {timeAgo(report.createdAt)}
+                                                </p>
+                                            ))}
+                                    </div>
+
+                                    {/* {barangay.recentReports.length > 2 && (
+                                        <span className="text-sm text-gray-700 font-medium">
+                                            +{" "}
+                                            {barangay.recentReports.length - 2}
+                                        </span>
+                                    )} */}
+
+                                    {/* {barangay.recentReports[0] && (
+                                        <span className="text-xs text-gray-500 ml-2">
+                                            •{" "}
+                                            {timeAgo(
+                                                    barangay.recentReports[0]
+                                                        .createdAt
+                                                )}
+                                        </span>
+                                    )} */}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+        </aside>
     )
 }
 
@@ -189,3 +159,27 @@ const searchIcon = (
         />
     </svg>
 )
+
+type Barangay = {
+    id: string
+    name: string
+    hazards: string[]
+}
+
+const barangays: Barangay[] = [
+    {
+        id: "1",
+        name: "Aplaya",
+        hazards: ["Flood", "Typhoon"],
+    },
+    {
+        id: "2",
+        name: "San Miguel",
+        hazards: ["Landslide"],
+    },
+    {
+        id: "3",
+        name: "Zone 3",
+        hazards: ["Flood", "Pandemic"],
+    },
+]
