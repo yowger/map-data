@@ -8,6 +8,7 @@ import DateRangePicker from "../components/ui/DateRangeSelector"
 import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
 import { timeAgo } from "../utils/time"
+import { markerStyles } from "../utils/map"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -101,35 +102,47 @@ export default function Sidebar() {
                                 </div>
 
                                 <div className="">
-                                    <h3 className="text-gray-700 hover:text-gray-900">Recent reports</h3>
+                                    <h3 className="text-gray-700 hover:text-gray-900">
+                                        Recent reports
+                                    </h3>
 
-                                    <div className="flex flex-col">
-                                        {barangay.recentReports
-                                            .slice(0, 2)
-                                            .map((report, index) => (
-                                                <p className="text-sm text-gray-700 hover:text-gray-900">
-                                                    {report.type} •{" "}
-                                                    {timeAgo(report.createdAt)}
-                                                </p>
-                                            ))}
-                                    </div>
+                                    {barangay.recentReports
+                                        .slice(0, 2)
+                                        .map((report, index) => {
+                                            const style =
+                                                markerStyles[report.type] ||
+                                                markerStyles["Other"]
 
-                                    {/* {barangay.recentReports.length > 2 && (
-                                        <span className="text-sm text-gray-700 font-medium">
-                                            +{" "}
-                                            {barangay.recentReports.length - 2}
-                                        </span>
-                                    )} */}
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="flex gap-3 p-2"
+                                                >
+                                                    <div
+                                                        style={{
+                                                            backgroundColor:
+                                                                style.color,
+                                                        }}
+                                                        className="size-9 rounded-full flex items-center justify-center"
+                                                    >
+                                                        <i
+                                                            className={`${style.icon} text-white text-sm`}
+                                                        />
+                                                    </div>
 
-                                    {/* {barangay.recentReports[0] && (
-                                        <span className="text-xs text-gray-500 ml-2">
-                                            •{" "}
-                                            {timeAgo(
-                                                    barangay.recentReports[0]
-                                                        .createdAt
-                                                )}
-                                        </span>
-                                    )} */}
+                                                    <div className="flex flex-col leading-tight">
+                                                        <span className="text-sm font-medium text-gray-800">
+                                                            {report.type}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500">
+                                                            {timeAgo(
+                                                                report.createdAt
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
                                 </div>
                             </li>
                         ))}

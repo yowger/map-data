@@ -27,7 +27,7 @@ export default function DateRangeSelector({ range, onChange }: Props) {
                     icon={
                         <i className="fa-solid fa-calendar-day text-gray-400" />
                     }
-                    className={open ? "bg-gray-100" : ""}
+                    className={open ? "bg-gray-100 rounded-sm" : "rounded-sm "}
                 />
             </PopOver.Trigger>
             <PopOver.Content>
