@@ -7,10 +7,8 @@ import DateRangePicker from "../components/ui/DateRangeSelector"
 // import PopOver from "../components/ui/PopOver"
 import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
-import { timeAgo } from "../utils/time"
-import { markerStyles } from "../utils/map"
 import BarangayReportList from "../components/map/BarangayReportList"
-import ScrollShadowList from "../components/ui/ScrollShadowList"
+import ScrollShadowWrapper from "../components/ui/ScrollShadowWrapper"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -79,25 +77,19 @@ export default function Sidebar() {
                 <h2 className="text-xl">Results</h2>
             </div>
 
-            <section className="overflow-auto flex-grow">
-                {barangaysIsLoading ? (
-                    <div className="text-gray-500 text-sm">
-                        Loading barangays...
-                    </div>
-                ) : barangaysIsError ? (
-                    <div className="text-red-500 text-sm">
-                        Failed to load data.
-                    </div>
-                ) : barangays?.length === 0 ? (
-                    <div className="text-gray-500 text-sm">
-                        No results found.
-                    </div>
-                ) : (
-                    <ScrollShadowList>
-                        <BarangayReportList barangays={barangays || []} />
-                    </ScrollShadowList>
-                )}
-            </section>
+            {barangaysIsLoading ? (
+                <div className="text-gray-500 text-sm">
+                    Loading barangays...
+                </div>
+            ) : barangaysIsError ? (
+                <div className="text-red-500 text-sm">Failed to load data.</div>
+            ) : barangays?.length === 0 ? (
+                <div className="text-gray-500 text-sm">No results found.</div>
+            ) : (
+                <ScrollShadowWrapper>
+                    <BarangayReportList barangays={barangays || []} />
+                </ScrollShadowWrapper>
+            )}
         </aside>
     )
 }
