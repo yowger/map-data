@@ -54,9 +54,9 @@ export function ScrollShadowWrapper({
             <div
                 style={{
                     background:
-                        "linear-gradient(to bottom, rgba(0, 0, 0, 0.08), transparent)",
+                        "linear-gradient(to bottom, rgba(0, 0, 0, 0.12), transparent)",
                 }}
-                className={`sticky top-0 h-4 -mb-4 w-full transition-opacity duration-300 ${
+                className={`sticky top-0 h-3.5 -mb-3.5 w-full transition-opacity duration-300 ${
                     top ? "opacity-100" : "opacity-0"
                 }`}
             />
@@ -68,7 +68,7 @@ export function ScrollShadowWrapper({
                     background:
                         "linear-gradient(to top, rgba(0, 0, 0, 0.08), transparent)",
                 }}
-                className={`sticky bottom-0 h-4 -mt-4 w-full transition-opacity duration-300 ${
+                className={`sticky bottom-0 h-3.5 -mt-3.5 w-full transition-opacity duration-300 ${
                     bottom ? "opacity-100" : "opacity-0"
                 }`}
             />
