@@ -9,6 +9,8 @@ import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
 import { timeAgo } from "../utils/time"
 import { markerStyles } from "../utils/map"
+import BarangayReportList from "../components/map/BarangayReportList"
+import ScrollShadowList from "../components/ui/ScrollShadowList"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -91,62 +93,9 @@ export default function Sidebar() {
                         No results found.
                     </div>
                 ) : (
-                    <ul className="">
-                        {barangays?.map((barangay) => (
-                            <li
-                                key={barangay.id}
-                                className="p-4 hover:bg-gray-50 border-b border-gray-300"
-                            >
-                                <div className="text-lg font-medium tracking-[.2px] text-gray-800">
-                                    {barangay.name}
-                                </div>
-
-                                <div className="">
-                                    <h3 className="text-gray-700 hover:text-gray-900">
-                                        Recent reports
-                                    </h3>
-
-                                    {barangay.recentReports
-                                        .slice(0, 2)
-                                        .map((report, index) => {
-                                            const style =
-                                                markerStyles[report.type] ||
-                                                markerStyles["Other"]
-
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    className="flex gap-3 p-2"
-                                                >
-                                                    <div
-                                                        style={{
-                                                            backgroundColor:
-                                                                style.color,
-                                                        }}
-                                                        className="size-9 rounded-full flex items-center justify-center"
-                                                    >
-                                                        <i
-                                                            className={`${style.icon} text-white text-sm`}
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex flex-col leading-tight">
-                                                        <span className="text-sm font-medium text-gray-800">
-                                                            {report.type}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500">
-                                                            {timeAgo(
-                                                                report.createdAt
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    <ScrollShadowList>
+                        <BarangayReportList barangays={barangays || []} />
+                    </ScrollShadowList>
                 )}
             </section>
         </aside>
