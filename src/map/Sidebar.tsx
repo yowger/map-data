@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
 
 import { useBarangaysWithReports } from "../api/useGetBarangayWithReports"
@@ -9,6 +9,8 @@ import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
 import BarangayReportList from "../components/map/BarangayReportList"
 import ScrollShadowWrapper from "../components/ui/ScrollShadowWrapper"
+import { usePaginatedReports } from "../api/usePaginatedReports"
+import { useVirtualizer } from "@tanstack/react-virtual"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -36,11 +38,59 @@ export default function Sidebar() {
     const [selectedEvents, setSelectedEvents] = useState<string[]>([])
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
 
+    // const {
+    //     data: barangays,
+    //     isLoading: barangaysIsLoading,
+    //     error: barangaysIsError,
+    // } = useBarangaysWithReports()
+
     const {
-        data: barangays,
-        isLoading: barangaysIsLoading,
-        error: barangaysIsError,
-    } = useBarangaysWithReports()
+        data: reports,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        error,
+        status,
+    } = usePaginatedReports({
+        // limit: 20,
+        // barangayIds: ["5", "6"],
+        // types: ["Flood", "Landslide"],
+        // statuses: ["pending", "verified"],
+    })
+
+    const allReports = reports
+        ? reports.pages.flatMap((report) => report.items)
+        : []
+    const parentRef = useRef<HTMLDivElement>(null)
+
+    const rowVirtualizer = useVirtualizer({
+        count: hasNextPage ? allReports.length + 1 : allReports.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 80,
+        overscan: 5,
+    })
+
+    useEffect(() => {
+        const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
+
+        if (!lastItem) return
+
+        if (
+            lastItem.index >= allReports.length - 1 &&
+            hasNextPage &&
+            !isFetchingNextPage
+        ) {
+            fetchNextPage()
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        hasNextPage,
+        fetchNextPage,
+        allReports.length,
+        isFetchingNextPage,
+        rowVirtualizer.getVirtualItems(),
+    ])
 
     return (
         <aside className="w-[27rem] bg-white shadow-lg h-full flex flex-col">
@@ -55,7 +105,7 @@ export default function Sidebar() {
                 />
             </div>
 
-            <div className="px-4 flex gap-2">
+            <div className="px-4 flex gap-2 mb-4">
                 <EventsFilterDropdown
                     selected={selectedEvents}
                     onChange={setSelectedEvents}
@@ -73,11 +123,60 @@ export default function Sidebar() {
                 />
             </div>
 
-            <div className="flex items-center my-4 mx-4">
-                <h2 className="text-xl">Results</h2>
-            </div>
+            {status === "pending" ? (
+                <p>Loading...</p>
+            ) : status === "error" ? (
+                <span>Error: {error.message}</span>
+            ) : (
+                <div ref={parentRef} className="flex-1 w-full overflow-auto">
+                    <div
+                        className="relative w-full"
+                        style={{
+                            height: `${rowVirtualizer.getTotalSize()}px`,
+                        }}
+                    >
+                        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const isLoaderRow =
+                                virtualRow.index > allReports.length - 1
+                            const report = allReports[virtualRow.index]
 
-            {barangaysIsLoading ? (
+                            return (
+                                <div
+                                    key={virtualRow.key}
+                                    ref={rowVirtualizer.measureElement}
+                                    className="absolute top-0 left-0 w-full"
+                                    style={{
+                                        height: `${virtualRow.size}px`,
+                                        transform: `translateY(${virtualRow.start}px)`,
+                                    }}
+                                >
+                                    {isLoaderRow ? (
+                                        <div className="text-center text-gray-400 text-sm">
+                                            hasNextPage ? ( "Loading more..." )
+                                            : ( "Nothing more to load" )
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p className="font-medium">
+                                                {report.type}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {report.status}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* <div className="flex items-center my-4 mx-4">
+                <h2 className="text-xl">Reports</h2>
+            </div> */}
+
+            {/* {barangaysIsLoading ? (
                 <div className="text-gray-500 text-sm">
                     Loading barangays...
                 </div>
@@ -88,8 +187,10 @@ export default function Sidebar() {
             ) : (
                 <ScrollShadowWrapper>
                     <BarangayReportList barangays={barangays || []} />
+
+                    <div></div>
                 </ScrollShadowWrapper>
-            )}
+            )} */}
         </aside>
     )
 }

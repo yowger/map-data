@@ -98,6 +98,10 @@ export default function Container() {
                 )}
             </aside> */}
             <Sidebar />
+{/* 
+            <div>
+                Details
+            </div> */}
 
             <Map
                 barangays={barangays}
