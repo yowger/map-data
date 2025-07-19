@@ -7,8 +7,6 @@ type Props = {
 }
 
 export default function BarangayReportList({ barangays }: Props) {
-    console.log("rerender")
-
     return (
         <ul>
             {barangays.map((barangay) => (
@@ -20,7 +18,7 @@ export default function BarangayReportList({ barangays }: Props) {
                         {barangay.name}
                     </div>
 
-                    <div>
+                    {/* <div>
                         <h3 className="text-gray-700 hover:text-gray-900 mb-1">
                             Recent reports
                         </h3>
@@ -34,7 +32,7 @@ export default function BarangayReportList({ barangays }: Props) {
                                     createdAt={report.createdAt}
                                 />
                             ))}
-                    </div>
+                    </div> */}
                 </li>
             ))}
         </ul>
