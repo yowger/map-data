@@ -1,6 +1,14 @@
+export type PopulatedAuthor = {
+    _id: string
+    name: string
+    email: string
+    avatarUrl: string
+}
+
 export type Report = {
     _id: string
     barangayId: string
+    barangayName: string
     type: string
     message: string
     lat: number
@@ -10,7 +18,7 @@ export type Report = {
         coordinates: [number, number]
     }
     imageUrls: string[]
-    authorId: string
+    author: PopulatedAuthor
     status: "pending" | "verified" | "rejected" | "archived"
     createdAt: string
     updatedAt: string

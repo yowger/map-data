@@ -11,6 +11,7 @@ import BarangayReportList from "../components/map/BarangayReportList"
 import ScrollShadowWrapper from "../components/ui/ScrollShadowWrapper"
 import { usePaginatedReports } from "../api/usePaginatedReports"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { timeAgo } from "../utils/time"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -31,6 +32,7 @@ const HAZARD_OPTIONS = [
 ]
 
 const STATUS_OPTIONS = ["Verified", "Unverified", "Spam", "Archived"]
+const LIST_ITEM_HEIGHT = 120
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
@@ -62,11 +64,12 @@ export default function Sidebar() {
         ? reports.pages.flatMap((report) => report.items)
         : []
     const parentRef = useRef<HTMLDivElement>(null)
+    console.log("🚀 ~ Sidebar ~ allReports:", allReports)
 
     const rowVirtualizer = useVirtualizer({
         count: hasNextPage ? allReports.length + 1 : allReports.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 80,
+        estimateSize: () => LIST_ITEM_HEIGHT,
         overscan: 5,
     })
 
@@ -123,6 +126,8 @@ export default function Sidebar() {
                 />
             </div>
 
+            {/* virtualizer.scrollToIndex(42) */}
+
             {status === "pending" ? (
                 <p>Loading...</p>
             ) : status === "error" ? (
@@ -156,13 +161,60 @@ export default function Sidebar() {
                                             : ( "Nothing more to load" )
                                         </div>
                                     ) : (
-                                        <div>
-                                            <p className="font-medium">
-                                                {report.type}
-                                            </p>
-                                            <p className="text-sm text-gray-500">
-                                                {report.status}
-                                            </p>
+                                        <div className="w-full h-auto flex items-center justify-between gap-4 px-4 py-3 border-b border-gray-200">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-gray-900 leading-tight truncate">
+                                                    {report.type}
+                                                </p>
+
+                                                <p className="text-sm text-gray-700">
+                                                    {report.barangayName}
+                                                </p>
+
+                                                {/* 
+             <span className="capitalize">
+                                                        {report.status}
+                                                    </span>
+                                                    <span>•</span>
+*/}
+                                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                                                    <i className="fa-regular fa-clock"></i>
+                                                    <span>
+                                                        {timeAgo(
+                                                            report.createdAt
+                                                        )}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    {report.author
+                                                        .avatarUrl && (
+                                                        <img
+                                                            src={
+                                                                report.author
+                                                                    .avatarUrl
+                                                            }
+                                                            alt={
+                                                                report.author
+                                                                    .name
+                                                            }
+                                                            className="size-5 rounded-full object-cover"
+                                                        />
+                                                    )}
+
+                                                    <p className="text-sm text-gray-800 truncate">
+                                                        {report.author.name}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {report.imageUrls?.[0] && (
+                                                <img
+                                                    src={report.imageUrls[0]}
+                                                    alt={report.type}
+                                                    className="size-20 rounded-md object-cover flex-shrink-0"
+                                                />
+                                            )}
                                         </div>
                                     )}
                                 </div>
