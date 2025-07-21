@@ -26,7 +26,7 @@ export function ReportCard({ report }: ReportCardProps) {
                                 {report.title}
                             </p>
 
-                            <div className="flex items-center gap-1 text-sm font-medium text-gray-700 mt-1">
+                            <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mt-1">
                                 <i
                                     className={`fa-solid fa-location-dot text-gray-500 flex-shrink-0`}
                                 />
@@ -35,11 +35,19 @@ export function ReportCard({ report }: ReportCardProps) {
                         </div>
 
                         {report.imageUrls?.[0] && (
-                            <img
-                                src={report.imageUrls[0]}
-                                alt={`${report.title} thumbnail`}
-                                className="size-20 rounded-md object-cover flex-shrink-0"
-                            />
+                            <div className="relative size-20 flex-shrink-0">
+                                <img
+                                    src={report.imageUrls[0]}
+                                    alt={`${report.title} thumbnail`}
+                                    className="w-full h-full object-cover rounded-md"
+                                />
+
+                                {report.imageUrls.length > 1 && (
+                                    <div className="absolute bottom-1 right-1 bg-black/40 text-white text-xs font-medium px-1.5 py-0.5 rounded-sm">
+                                        +{report.imageUrls.length - 1}
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
 

@@ -11,7 +11,7 @@ async function getBargangayGeoData(): Promise<BarangayGeoJSON> {
 
 export function useGetBarangayGeoData() {
     return useQuery({
-        queryKey: ["barangays"],
+        queryKey: ["barangays-geo-data"],
         queryFn: getBargangayGeoData,
         staleTime: Infinity,
     })

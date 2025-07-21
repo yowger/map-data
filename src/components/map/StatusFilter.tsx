@@ -26,7 +26,7 @@ export function StatusFilterDropdown({
     return (
         <PopOver>
             <PopOver.Trigger>
-                <button className="px-3.5 py-1.5 bg-gray-200 rounded-md text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-300">
+                <button className="px-3.5 py-1.5 bg-gray-200 rounded-md text-sm font-medium text-gray-700 cursor-pointer text-nowrap hover:bg-gray-300">
                     <span className="mr-1.5">
                         {selected.length > 0 && `${selected.length}`} Status
                     </span>

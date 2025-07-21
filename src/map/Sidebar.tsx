@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
 
 import TextInput from "../components/ui/TextInput"
-import DateRangePicker from "../components/ui/DateRangeSelector"
+import DateRangePicker from "../components/map/DateRangeSelector"
 import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
 import { usePaginatedReports } from "../api/usePaginatedReports"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { ReportCard } from "../components/map/ReportItem"
+import { useGetBarangays } from "../api/useGetBarangay"
+import { BarangayFilterDropdown } from "../components/map/BarangayFilter"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -26,16 +28,19 @@ const HAZARD_OPTIONS = [
     "Tornado",
     "Chemical Spill",
 ]
-
 const STATUS_OPTIONS = ["Verified", "Unverified", "Spam", "Archived"]
 const LIST_ITEM_HEIGHT = 150
+const ITEM_PER_PAGE = 20
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
     const [selectedEvents, setSelectedEvents] = useState<string[]>([])
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+    const [selectedBarangayIds, setSelectedBarangayIds] = useState<string[]>([])
 
     const parentRef = useRef<HTMLDivElement>(null)
+
+    const { data: barangays } = useGetBarangays()
 
     const {
         data: reports,
@@ -45,16 +50,19 @@ export default function Sidebar() {
         error,
         status,
     } = usePaginatedReports({
-        // limit: 20,
-        // barangayIds: ["5", "6"],
-        // types: ["Flood", "Landslide"],
-        // statuses: ["pending", "verified"],
+        limit: ITEM_PER_PAGE,
+        barangayIds: selectedBarangayIds,
+        types: selectedEvents,
+        statuses: selectedStatuses,
+        from: range?.from?.toISOString(),
+        to: range?.to
+            ? new Date(range.to.setHours(23, 59, 59, 999)).toISOString()
+            : undefined,
     })
 
     const allReports = reports
         ? reports.pages.flatMap((report) => report.items)
         : []
-    console.log("🚀 ~ Sidebar ~ allReports:", allReports)
 
     const virtualizer = useVirtualizer({
         count: hasNextPage ? allReports.length + 1 : allReports.length,
@@ -102,6 +110,14 @@ export default function Sidebar() {
             </div>
 
             <div className="px-4 flex gap-2 mb-4">
+                <BarangayFilterDropdown
+                    selected={selectedBarangayIds}
+                    onChange={setSelectedBarangayIds}
+                    barangays={barangays || []}
+                    onClear={() => setSelectedBarangayIds([])}
+                    onDone={() => {}}
+                />
+
                 <EventsFilterDropdown
                     selected={selectedEvents}
                     onChange={setSelectedEvents}
@@ -126,7 +142,7 @@ export default function Sidebar() {
             ) : (
                 <div
                     ref={parentRef}
-                    className="flex-1 h-[150x] w-full overflow-auto contain-strict"
+                    className="flex-1 w-full overflow-auto contain-strict"
                 >
                     <div
                         className="relative w-full"

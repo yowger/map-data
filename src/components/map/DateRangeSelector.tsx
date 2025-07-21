@@ -2,9 +2,9 @@ import { useState } from "react"
 import { format } from "date-fns"
 import { type DateRange } from "react-day-picker"
 
-import Button from "./Button"
-import DatePicker from "./DatePicker"
-import PopOver from "./PopOver"
+import Button from "../ui/Button"
+import DatePicker from "../ui/DatePicker"
+import PopOver from "../ui/PopOver"
 
 type Props = {
     range: DateRange | undefined

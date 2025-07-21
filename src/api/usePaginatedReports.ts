@@ -8,21 +8,20 @@ type GetReportsParams = {
     barangayIds?: string[]
     types?: string[]
     statuses?: string[]
+    from?: string
+    to?: string
 }
 
 async function fetchReports(
     cursor: string | null,
     filters: GetReportsParams
 ): Promise<PaginatedReportsResponse> {
-    const res = await axiosClient.get<PaginatedReportsResponse>(
-        "/v1/reports",
-        {
-            params: {
-                cursor,
-                ...filters,
-            },
-        }
-    )
+    const res = await axiosClient.get<PaginatedReportsResponse>("/v1/reports", {
+        params: {
+            cursor,
+            ...filters,
+        },
+    })
 
     return res.data
 }
@@ -32,7 +31,7 @@ export function usePaginatedReports(filters: GetReportsParams = {}) {
         queryKey: ["reports", filters],
         queryFn: async ({ pageParam }: { pageParam?: unknown }) => {
             const cursor = typeof pageParam === "string" ? pageParam : null
-            
+
             return fetchReports(cursor, filters)
         },
         initialPageParam: null,
