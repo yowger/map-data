@@ -1,15 +1,15 @@
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { useEffect, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
 
-import TextInput from "../components/ui/TextInput"
-import DateRangePicker from "../components/map/DateRangeSelector"
-import { EventsFilterDropdown } from "../components/map/EventsFilter"
-import { StatusFilterDropdown } from "../components/map/StatusFilter"
-import { usePaginatedReports } from "../api/usePaginatedReports"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { ReportCard } from "../components/map/ReportItem"
 import { useGetBarangays } from "../api/useGetBarangay"
 import { BarangayFilterDropdown } from "../components/map/BarangayFilter"
+import DateRangePicker from "../components/map/DateRangeSelector"
+import { EventsFilterDropdown } from "../components/map/EventsFilter"
+import { ReportCard as ReportItem } from "../components/map/ReportItem"
+import { StatusFilterDropdown } from "../components/map/StatusFilter"
+import { usePaginatedReports } from "../api/usePaginatedReports"
+import TextInput from "../components/ui/TextInput"
 import XScrollWrapper from "../components/ui/XScrollWrapper"
 
 const HAZARD_OPTIONS = [
@@ -100,7 +100,7 @@ export default function Sidebar() {
     return (
         <aside className="w-[28rem] bg-white shadow-lg h-full flex flex-col overflow-hidden">
             <div className="flex flex-col gap-4 p-4">
-                <TextInput icon={searchIcon} placeholder="Search barangay" />
+                <TextInput icon={searchIcon} placeholder="Search title" />
 
                 <DateRangePicker
                     range={range}
@@ -186,7 +186,7 @@ export default function Sidebar() {
                                                 load" )
                                             </div>
                                         ) : (
-                                            <ReportCard report={report} />
+                                            <ReportItem report={report} />
                                         )}
                                     </div>
                                 )
