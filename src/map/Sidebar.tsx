@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
 
-import { useBarangaysWithReports } from "../api/useGetBarangayWithReports"
 import TextInput from "../components/ui/TextInput"
 import DateRangePicker from "../components/ui/DateRangeSelector"
-// import PopOver from "../components/ui/PopOver"
 import { EventsFilterDropdown } from "../components/map/EventsFilter"
 import { StatusFilterDropdown } from "../components/map/StatusFilter"
-import BarangayReportList from "../components/map/BarangayReportList"
-import ScrollShadowWrapper from "../components/ui/ScrollShadowWrapper"
 import { usePaginatedReports } from "../api/usePaginatedReports"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { timeAgo } from "../utils/time"
+import { ReportCard } from "../components/map/ReportItem"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -32,19 +28,14 @@ const HAZARD_OPTIONS = [
 ]
 
 const STATUS_OPTIONS = ["Verified", "Unverified", "Spam", "Archived"]
-const LIST_ITEM_HEIGHT = 120
+const LIST_ITEM_HEIGHT = 150
 
 export default function Sidebar() {
     const [range, setRange] = useState<DateRange | undefined>()
-    // const [selectedHazards, setSelectedHazards] = useState<string[]>([])
     const [selectedEvents, setSelectedEvents] = useState<string[]>([])
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
 
-    // const {
-    //     data: barangays,
-    //     isLoading: barangaysIsLoading,
-    //     error: barangaysIsError,
-    // } = useBarangaysWithReports()
+    const parentRef = useRef<HTMLDivElement>(null)
 
     const {
         data: reports,
@@ -63,18 +54,20 @@ export default function Sidebar() {
     const allReports = reports
         ? reports.pages.flatMap((report) => report.items)
         : []
-    const parentRef = useRef<HTMLDivElement>(null)
     console.log("🚀 ~ Sidebar ~ allReports:", allReports)
 
-    const rowVirtualizer = useVirtualizer({
+    const virtualizer = useVirtualizer({
         count: hasNextPage ? allReports.length + 1 : allReports.length,
+        overscan: 5,
         getScrollElement: () => parentRef.current,
         estimateSize: () => LIST_ITEM_HEIGHT,
-        overscan: 5,
+        measureElement: (el) => el.getBoundingClientRect().height,
     })
 
+    const items = virtualizer.getVirtualItems()
+
     useEffect(() => {
-        const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
+        const [lastItem] = [...virtualizer.getVirtualItems()].reverse()
 
         if (!lastItem) return
 
@@ -92,11 +85,11 @@ export default function Sidebar() {
         fetchNextPage,
         allReports.length,
         isFetchingNextPage,
-        rowVirtualizer.getVirtualItems(),
+        virtualizer.getVirtualItems(),
     ])
 
     return (
-        <aside className="w-[27rem] bg-white shadow-lg h-full flex flex-col">
+        <aside className="w-[28rem] bg-white shadow-lg h-full flex flex-col">
             <div className="flex flex-col gap-4 p-4">
                 <TextInput icon={searchIcon} placeholder="Search barangay" />
 
@@ -126,129 +119,64 @@ export default function Sidebar() {
                 />
             </div>
 
-            {/* virtualizer.scrollToIndex(42) */}
-
             {status === "pending" ? (
                 <p>Loading...</p>
             ) : status === "error" ? (
                 <span>Error: {error.message}</span>
             ) : (
-                <div ref={parentRef} className="flex-1 w-full overflow-auto">
+                <div
+                    ref={parentRef}
+                    className="flex-1 h-[150x] w-full overflow-auto contain-strict"
+                >
                     <div
                         className="relative w-full"
                         style={{
-                            height: `${rowVirtualizer.getTotalSize()}px`,
+                            height: virtualizer.getTotalSize(),
+                            width: "100%",
+                            position: "relative",
                         }}
                     >
-                        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                            const isLoaderRow =
-                                virtualRow.index > allReports.length - 1
-                            const report = allReports[virtualRow.index]
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                transform: `translateY(${
+                                    items[0]?.start ?? 0
+                                }px)`,
+                            }}
+                        >
+                            {items.map((virtualRow) => {
+                                const isLoaderRow =
+                                    virtualRow.index > allReports.length - 1
+                                const report = allReports[virtualRow.index]
 
-                            return (
-                                <div
-                                    key={virtualRow.key}
-                                    ref={rowVirtualizer.measureElement}
-                                    className="absolute top-0 left-0 w-full"
-                                    style={{
-                                        height: `${virtualRow.size}px`,
-                                        transform: `translateY(${virtualRow.start}px)`,
-                                    }}
-                                >
-                                    {isLoaderRow ? (
-                                        <div className="text-center text-gray-400 text-sm">
-                                            hasNextPage ? ( "Loading more..." )
-                                            : ( "Nothing more to load" )
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-auto flex items-center justify-between gap-4 px-4 py-3 border-b border-gray-200">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-gray-900 leading-tight truncate">
-                                                    {report.type}
-                                                </p>
-
-                                                <p className="text-sm text-gray-700">
-                                                    {report.barangayName}
-                                                </p>
-
-                                                {/* 
-             <span className="capitalize">
-                                                        {report.status}
-                                                    </span>
-                                                    <span>•</span>
-*/}
-                                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                                                    <i className="fa-regular fa-clock"></i>
-                                                    <span>
-                                                        {timeAgo(
-                                                            report.createdAt
-                                                        )}
-                                                    </span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    {report.author
-                                                        .avatarUrl && (
-                                                        <img
-                                                            src={
-                                                                report.author
-                                                                    .avatarUrl
-                                                            }
-                                                            alt={
-                                                                report.author
-                                                                    .name
-                                                            }
-                                                            className="size-5 rounded-full object-cover"
-                                                        />
-                                                    )}
-
-                                                    <p className="text-sm text-gray-800 truncate">
-                                                        {report.author.name}
-                                                    </p>
-                                                </div>
+                                return (
+                                    <div
+                                        key={virtualRow.key}
+                                        data-index={virtualRow.key}
+                                        ref={virtualizer.measureElement}
+                                    >
+                                        {isLoaderRow ? (
+                                            <div className="text-center text-gray-400 text-sm">
+                                                hasNextPage ? ( "Loading
+                                                more..." ) : ( "Nothing more to
+                                                load" )
                                             </div>
-
-                                            {report.imageUrls?.[0] && (
-                                                <img
-                                                    src={report.imageUrls[0]}
-                                                    alt={report.type}
-                                                    className="size-20 rounded-md object-cover flex-shrink-0"
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        })}
+                                        ) : (
+                                            <ReportCard report={report} />
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
             )}
-
-            {/* <div className="flex items-center my-4 mx-4">
-                <h2 className="text-xl">Reports</h2>
-            </div> */}
-
-            {/* {barangaysIsLoading ? (
-                <div className="text-gray-500 text-sm">
-                    Loading barangays...
-                </div>
-            ) : barangaysIsError ? (
-                <div className="text-red-500 text-sm">Failed to load data.</div>
-            ) : barangays?.length === 0 ? (
-                <div className="text-gray-500 text-sm">No results found.</div>
-            ) : (
-                <ScrollShadowWrapper>
-                    <BarangayReportList barangays={barangays || []} />
-
-                    <div></div>
-                </ScrollShadowWrapper>
-            )} */}
         </aside>
     )
 }
-
-// filter for
-// hazard, status, sort Z-A?
 
 const searchIcon = (
     <svg
@@ -266,27 +194,3 @@ const searchIcon = (
         />
     </svg>
 )
-
-type Barangay = {
-    id: string
-    name: string
-    hazards: string[]
-}
-
-const barangays: Barangay[] = [
-    {
-        id: "1",
-        name: "Aplaya",
-        hazards: ["Flood", "Typhoon"],
-    },
-    {
-        id: "2",
-        name: "San Miguel",
-        hazards: ["Landslide"],
-    },
-    {
-        id: "3",
-        name: "Zone 3",
-        hazards: ["Flood", "Pandemic"],
-    },
-]

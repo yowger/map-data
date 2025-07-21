@@ -7,6 +7,8 @@ export type PopulatedAuthor = {
 
 export type Report = {
     _id: string
+    title: string
+    description: string
     barangayId: string
     barangayName: string
     type: string
