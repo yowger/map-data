@@ -10,6 +10,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { ReportCard } from "../components/map/ReportItem"
 import { useGetBarangays } from "../api/useGetBarangay"
 import { BarangayFilterDropdown } from "../components/map/BarangayFilter"
+import XScrollWrapper from "../components/ui/XScrollWrapper"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -97,7 +98,7 @@ export default function Sidebar() {
     ])
 
     return (
-        <aside className="w-[28rem] bg-white shadow-lg h-full flex flex-col">
+        <aside className="w-[28rem] bg-white shadow-lg h-full flex flex-col overflow-hidden">
             <div className="flex flex-col gap-4 p-4">
                 <TextInput icon={searchIcon} placeholder="Search barangay" />
 
@@ -109,30 +110,34 @@ export default function Sidebar() {
                 />
             </div>
 
-            <div className="px-4 flex gap-2 mb-4">
-                <BarangayFilterDropdown
-                    selected={selectedBarangayIds}
-                    onChange={setSelectedBarangayIds}
-                    barangays={barangays || []}
-                    onClear={() => setSelectedBarangayIds([])}
-                    onDone={() => {}}
-                />
+            <div className="w-full mb-4">
+                <XScrollWrapper>
+                    <BarangayFilterDropdown
+                        selected={selectedBarangayIds}
+                        onChange={setSelectedBarangayIds}
+                        barangays={barangays || []}
+                        onClear={() => setSelectedBarangayIds([])}
+                        onDone={() => {}}
+                    />
 
-                <EventsFilterDropdown
-                    selected={selectedEvents}
-                    onChange={setSelectedEvents}
-                    events={HAZARD_OPTIONS}
-                    onClear={() => setSelectedEvents([])}
-                    onDone={() => {}}
-                />
+                    <EventsFilterDropdown
+                        selected={selectedEvents}
+                        onChange={setSelectedEvents}
+                        events={HAZARD_OPTIONS}
+                        onClear={() => setSelectedEvents([])}
+                        onDone={() => {}}
+                    />
 
-                <StatusFilterDropdown
-                    selected={selectedStatuses}
-                    onChange={setSelectedStatuses}
-                    statuses={STATUS_OPTIONS}
-                    onClear={() => setSelectedStatuses([])}
-                    onDone={() => console.log("Statuses:", selectedStatuses)}
-                />
+                    <StatusFilterDropdown
+                        selected={selectedStatuses}
+                        onChange={setSelectedStatuses}
+                        statuses={STATUS_OPTIONS}
+                        onClear={() => setSelectedStatuses([])}
+                        onDone={() =>
+                            console.log("Statuses:", selectedStatuses)
+                        }
+                    />
+                </XScrollWrapper>
             </div>
 
             {status === "pending" ? (
