@@ -3,6 +3,8 @@
         create auto flipping
         create get window size, pos on change 
         keyboard event (ESC) to exit
+
+    I have gained knowledge that making your own components is a pain in the ass.
 */
 
 import {
@@ -20,6 +22,7 @@ import {
     useLayoutEffect,
     type MouseEvent,
     type RefObject,
+    Children,
 } from "react"
 
 import { useFocusTrap } from "../../hooks/useFocusTrap"
@@ -187,6 +190,19 @@ function ContentInternal({ children }: ContentProps) {
         })
     }, [position, triggerRect])
 
+    const contentArray = Children.toArray(children)
+
+    const body = contentArray.find(
+        (child) =>
+            isValidElement(child) &&
+            (child.type as { _role?: string })._role === "body"
+    )
+    const footer = contentArray.find(
+        (child) =>
+            isValidElement(child) &&
+            (child.type as { _role?: string })._role === "footer"
+    )
+
     return (
         <dialog
             open={true}
@@ -196,11 +212,35 @@ function ContentInternal({ children }: ContentProps) {
                 top: `${coords.top}px`,
                 maxHeight: maxHeight ? `${maxHeight}px` : undefined,
             }}
-            className="fixed m-0 z-[500] overflow-y-auto border border-gray-300 rounded-md shadow-sm"
+            className="fixed m-0 z-[500] border border-gray-300 rounded-md shadow-sm"
         >
-            {children}
+            <div className="flex flex-col max-h-[inherit] min-h-0">
+                <div className="overflow-y-auto max-h-[inherit] min-h-0">
+                    {body}
+                </div>
+
+                {footer && footer}
+            </div>
         </dialog>
     )
+}
+
+type BodyProps = {
+    children: ReactNode
+    className?: string
+} & HTMLAttributes<HTMLDivElement>
+
+type FooterProps = {
+    children: ReactNode
+    className?: string
+} & HTMLAttributes<HTMLDivElement>
+
+function Body({ children, className }: BodyProps) {
+    return <div className={`p-3.5 ${className}`}>{children}</div>
+}
+
+function Footer({ children, className }: FooterProps) {
+    return <div className={`px-3.5 py-3 ${className}`}>{children}</div>
 }
 
 function Close({ children }: CloseProps) {
@@ -271,6 +311,11 @@ function isRefObjectWithElement<T extends HTMLElement>(
     return ref.current !== null
 }
 
+Body._role = "body"
+Footer._role = "footer"
+
 PopOver.Trigger = Trigger
 PopOver.Content = Content
+PopOver.Body = Body
+PopOver.Footer = Footer
 PopOver.Close = Close

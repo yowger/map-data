@@ -70,7 +70,7 @@ export function ReportCard({ report }: ReportCardProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                     {report.author.avatarUrl && (
                         <img
                             src={report.author.avatarUrl}
