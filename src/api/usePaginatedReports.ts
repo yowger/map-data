@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
+import qs from "qs"
 
 import { axiosClient } from "../services/axios"
 import type { PaginatedReportsResponse } from "../types/reports"
@@ -21,6 +22,8 @@ async function fetchReports(
             cursor,
             ...filters,
         },
+        paramsSerializer: (params) =>
+            qs.stringify(params, { arrayFormat: "repeat" }),
     })
 
     return res.data

@@ -14,22 +14,18 @@ import XScrollWrapper from "../components/ui/XScrollWrapper"
 
 const HAZARD_OPTIONS = [
     "Flood",
-    "Earthquake",
-    "Fire",
     "Landslide",
-    "Tsunami",
-    "Typhoon",
-    "Storm Surge",
-    "Volcanic Eruption",
-    "Drought",
-    "Extreme Heat",
-    "Strong Winds",
-    "Hailstorm",
-    "Pandemic",
-    "Tornado",
-    "Chemical Spill",
+    "Garbage",
+    "Road Damage",
+    "Blocked Drainage",
+    "Power Outage",
+    "Missing Person",
+    "Missing Animal",
+    "Missing Vehicle",
+    "Missing Object",
+    "Other",
 ]
-const STATUS_OPTIONS = ["Verified", "Unverified", "Spam", "Archived"]
+const STATUS_OPTIONS = ["pending", "verified", "rejected", "archived"]
 const LIST_ITEM_HEIGHT = 150
 const ITEM_PER_PAGE = 20
 
@@ -110,7 +106,7 @@ export default function Sidebar() {
                 />
             </div>
 
-            <div className="w-full mb-4">
+            <div className="w-full mb-2">
                 <XScrollWrapper>
                     <BarangayFilterDropdown
                         selected={selectedBarangayIds}
@@ -144,6 +140,10 @@ export default function Sidebar() {
                 <p>Loading...</p>
             ) : status === "error" ? (
                 <span>Error: {error.message}</span>
+            ) : allReports.length === 0 ? (
+                <div className="flex text-gray-500 text-sm px-4 py-2">
+                    No reports found.
+                </div>
             ) : (
                 <div
                     ref={parentRef}

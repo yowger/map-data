@@ -61,7 +61,7 @@ export default function XScrollWrapper({
                 </button>
             )}
 
-            <div className={`relative px-6`}>
+            <div className={`relative px-4`}>
                 <div
                     ref={containerRef}
                     className={`no-scrollbar overflow-x-auto whitespace-nowrap flex gap-2 py-2 ${className}`}
