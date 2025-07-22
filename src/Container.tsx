@@ -10,7 +10,7 @@ import {
 // import BarangayDetailView from "./components/map/BarangayViewDetail"
 // import BarangayListView from "./components/map/BarangayListView"
 import Map from "./map/Map"
-import type { BarangayFeature, BBox, ClusterFeature } from "./types/map"
+import type { BBox, ClusterFeature } from "./types/map"
 import Sidebar from "./map/Sidebar"
 import {
     deduplicateClusters,
@@ -49,8 +49,19 @@ export default function Container() {
             fetchPaddedBounds.getNorth(),
         ]
 
-        const incomingClusters = await fetchClusters(queryClient, zoom, bbox)
-        const cachedClusters = getCachedClusters(queryClient, zoom)
+        const incomingClusters = await fetchClusters({
+            queryClient,
+            filters: {
+                zoom,
+                bbox,
+            },
+        })
+        const cachedClusters = getCachedClusters({
+            queryClient,
+            filters: {
+                zoom,
+            },
+        })
         const dedupedCachedClusters = deduplicateClusters(cachedClusters)
 
         const incomingClusterKeys = new Set(incomingClusters.map(getClusterKey))
@@ -98,7 +109,7 @@ export default function Container() {
                 )}
             </aside> */}
             <Sidebar />
-{/* 
+            {/* 
             <div>
                 Details
             </div> */}
