@@ -31,27 +31,29 @@ export default function DateRangeSelector({ range, onChange }: Props) {
                 />
             </PopOver.Trigger>
             <PopOver.Content>
-                <DatePicker
-                    mode="range"
-                    selected={range}
-                    onSelect={(newRange) => {
-                        const from = newRange?.from
-                        const to = newRange?.to
+                <PopOver.Body>
+                    <DatePicker
+                        mode="range"
+                        selected={range}
+                        onSelect={(newRange) => {
+                            const from = newRange?.from
+                            const to = newRange?.to
 
-                        const isRangeComplete =
-                            from &&
-                            to &&
-                            from instanceof Date &&
-                            to instanceof Date &&
-                            from.getTime() !== to.getTime()
+                            const isRangeComplete =
+                                from &&
+                                to &&
+                                from instanceof Date &&
+                                to instanceof Date &&
+                                from.getTime() !== to.getTime()
 
-                        onChange?.(newRange)
+                            onChange?.(newRange)
 
-                        if (isRangeComplete) {
-                            setOpen(false)
-                        }
-                    }}
-                />
+                            if (isRangeComplete) {
+                                setOpen(false)
+                            }
+                        }}
+                    />
+                </PopOver.Body>
             </PopOver.Content>
         </PopOver>
     )
