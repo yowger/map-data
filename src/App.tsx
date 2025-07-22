@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import Container from "./Container"
-import FilterProvider from "./components/filterProvider"
+import FilterProvider from "./components/providers/filterProvider"
+import { MapProvider } from "./components/providers/mapProvider"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -15,9 +16,11 @@ const queryClient = new QueryClient({
 export default function App() {
     return (
         <FilterProvider>
-            <QueryClientProvider client={queryClient}>
-                <Container />
-            </QueryClientProvider>
+            <MapProvider>
+                <QueryClientProvider client={queryClient}>
+                    <Container />
+                </QueryClientProvider>
+            </MapProvider>
         </FilterProvider>
     )
 }

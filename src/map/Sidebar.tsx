@@ -1,4 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual"
+import Leaflet from "leaflet"
 import { useEffect, useRef } from "react"
 
 import { useGetBarangays } from "../api/useGetBarangay"
@@ -11,6 +12,7 @@ import { usePaginatedReports } from "../api/usePaginatedReports"
 import TextInput from "../components/ui/TextInput"
 import XScrollWrapper from "../components/ui/XScrollWrapper"
 import { useFilterContext } from "../hooks/useFilterContext"
+import { useMapRefContext } from "../hooks/useMapContext"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -40,11 +42,10 @@ export default function Sidebar() {
         selectedBarangayIds,
         setSelectedBarangayIds,
     } = useFilterContext()
-
+    const mapRefContext = useMapRefContext()
     const parentRef = useRef<HTMLDivElement>(null)
 
     const { data: barangays } = useGetBarangays()
-
     const {
         data: reports,
         fetchNextPage,
@@ -98,6 +99,24 @@ export default function Sidebar() {
         isFetchingNextPage,
         virtualizer.getVirtualItems(),
     ])
+
+    function handleMapFlyTo(coords: [number, number]) {
+        if (!mapRefContext?.current) return
+
+        const map = mapRefContext.current
+        const targetLatLng = Leaflet.latLng(coords[1], coords[0]) // [lat, lng]
+        const currentCenter = map.getCenter()
+
+        const distance = currentCenter.distanceTo(targetLatLng)
+
+        const duration = Math.min(Math.max((distance / 1000) * 0.5, 0.8), 2.5)
+
+        console.log("🚀 ~ flyTo distance:", distance, "duration:", duration)
+
+        map.flyTo(targetLatLng, 16, {
+            duration,
+        })
+    }
 
     return (
         <aside className="w-[28rem] bg-white shadow-lg h-full flex flex-col overflow-hidden">
@@ -193,7 +212,12 @@ export default function Sidebar() {
                                                 load" )
                                             </div>
                                         ) : (
-                                            <ReportItem report={report} />
+                                            <ReportItem
+                                                report={report}
+                                                onClick={(coords) =>
+                                                    handleMapFlyTo(coords)
+                                                }
+                                            />
                                         )}
                                     </div>
                                 )

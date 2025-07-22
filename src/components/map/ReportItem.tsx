@@ -12,13 +12,18 @@ type ReportCardProps = {
             name: string
             avatarUrl?: string
         }
+        location: {
+            type: "Point"
+            coordinates: [number, number]
+        }
     }
+    onClick?: (coordinates: [number, number]) => void
 }
 
-export function ReportCard({ report }: ReportCardProps) {
+export function ReportCard({ report, onClick }: ReportCardProps) {
     return (
         <button
-            onClick={() => console.log("todo")}
+            onClick={() => onClick?.(report.location.coordinates)}
             className="w-full text-left h-auto flex items-center gap-4 px-4 py-3 border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
             aria-label={`View report titled ${report.title}`}
         >

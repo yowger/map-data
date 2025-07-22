@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { DateRange } from "react-day-picker"
 
-import { FilterContext, type FilterContextType } from "../store/filterContext"
+import { FilterContext, type FilterContextType } from "../../store/filterContext"
 
 export default function FilterProvider({
     children,

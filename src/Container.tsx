@@ -7,17 +7,16 @@ import {
     fetchClusters,
     getCachedClusters,
 } from "./api/useGetBarangayReportClusters"
-// import BarangayDetailView from "./components/map/BarangayViewDetail"
-// import BarangayListView from "./components/map/BarangayListView"
+import { useFilterContext } from "./hooks/useFilterContext"
+import { useMapRefContext } from "./hooks/useMapContext"
 import Map from "./map/Map"
-import type { BBox, ClusterFeature } from "./types/map"
 import Sidebar from "./map/Sidebar"
+import type { BBox, ClusterFeature } from "./types/map"
 import {
     deduplicateClusters,
     getClusterKey,
     getDynamicPadding,
 } from "./utils/mapUtils"
-import { useFilterContext } from "./hooks/useFilterContext"
 
 const PADDING_FALLOFF_RATE = 0.1
 const VISIBLE_PADDING_FACTOR = 0.6
@@ -25,10 +24,8 @@ const VISIBLE_PADDING_FACTOR = 0.6
 export default function Container() {
     const { range, selectedEvents, selectedStatuses, selectedBarangayIds } =
         useFilterContext()
+    const mapRefContext = useMapRefContext()
     const [mapRef, setMapRef] = useState<Leaflet.Map | null>(null)
-    // const [sidebarView, setSidebarView] = useState<"list" | "detail">("list")
-    // const [selectedBarangay, setSelectedBarangay] =
-    //     useState<BarangayFeature | null>(null)
     const [visibleClusters, setVisibleClusters] = useState<ClusterFeature[]>([])
 
     const {
@@ -39,65 +36,18 @@ export default function Container() {
 
     const queryClient = useQueryClient()
 
-    function getBBox(map: Leaflet.Map): BBox {
-        const bounds = map.getBounds()
-        const padding = getDynamicPadding(map.getZoom()) + PADDING_FALLOFF_RATE
-        const padded = bounds.pad(padding)
+    async function handleMoveEnd(map: Leaflet.Map) {
+        setMapRef(map)
 
-        return [
-            padded.getWest(),
-            padded.getSouth(),
-            padded.getEast(),
-            padded.getNorth(),
-        ]
-    }
+        const visibleClusters = await fetchVisibleClusters(map)
 
-    function getActiveFilters({
-        selectedEvents,
-        selectedStatuses,
-        selectedBarangayIds,
-        range,
-    }: {
-        selectedEvents: string[]
-        selectedStatuses: string[]
-        selectedBarangayIds: string[]
-        range: { from?: Date; to?: Date } | undefined
-    }) {
-        return {
-            types: selectedEvents.length ? selectedEvents : undefined,
-            statuses: selectedStatuses.length ? selectedStatuses : undefined,
-            barangayIds: selectedBarangayIds.length
-                ? selectedBarangayIds
-                : undefined,
-            from: range?.from?.toISOString(),
-            to: range?.to?.toISOString(),
-        }
-    }
-
-    function getVisibleClusters(
-        cached: [unknown, unknown][],
-        incoming: ClusterFeature[],
-        bounds: Leaflet.LatLngBounds
-    ) {
-        const deduped = deduplicateClusters(cached)
-        const visibleBounds = bounds.pad(VISIBLE_PADDING_FACTOR)
-        const incomingKeys = new Set(incoming.map(getClusterKey))
-
-        return deduped.filter((cluster) => {
-            const [lng, lat] = cluster.geometry.coordinates
-            const key = getClusterKey(cluster)
-
-            return (
-                visibleBounds.contains(Leaflet.latLng(lat, lng)) &&
-                incomingKeys.has(key)
-            )
-        })
+        setVisibleClusters(visibleClusters)
     }
 
     async function fetchVisibleClusters(map: Leaflet.Map) {
         const zoom = map.getZoom()
-        const bbox = getBBox(map)
-        const filters = getActiveFilters({
+        const bbox = getMapBBox(map)
+        const filters = builderFilters({
             selectedEvents,
             selectedStatuses,
             selectedBarangayIds,
@@ -121,22 +71,12 @@ export default function Container() {
             },
         })
 
-        return getVisibleClusters(
+        return filterClustersInView(
             cachedClusters,
             incomingClusters,
             map.getBounds()
         )
     }
-
-    async function handleMoveEnd(map: Leaflet.Map) {
-        setMapRef(map)
-
-        const visibleClusters = await fetchVisibleClusters(map)
-
-        setVisibleClusters(visibleClusters)
-    }
-
-    useEffect(() => {}, [])
 
     useEffect(() => {
         if (!mapRef) return
@@ -148,6 +88,8 @@ export default function Container() {
         }
 
         run()
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedEvents, selectedStatuses, selectedBarangayIds, range])
 
     if (barangaysLoading) {
@@ -169,6 +111,8 @@ export default function Container() {
                 selectedBarangay={null}
                 OnMoveEnd={handleMoveEnd}
                 OnReady={async (map) => {
+                    mapRefContext.current = map
+
                     const visibleClusters = await fetchVisibleClusters(map)
 
                     setVisibleClusters(visibleClusters)
@@ -176,6 +120,61 @@ export default function Container() {
             />
         </div>
     )
+}
+
+function getMapBBox(map: Leaflet.Map): BBox {
+    const bounds = map.getBounds()
+    const padding = getDynamicPadding(map.getZoom()) + PADDING_FALLOFF_RATE
+    const padded = bounds.pad(padding)
+
+    return [
+        padded.getWest(),
+        padded.getSouth(),
+        padded.getEast(),
+        padded.getNorth(),
+    ]
+}
+
+function builderFilters({
+    selectedEvents,
+    selectedStatuses,
+    selectedBarangayIds,
+    range,
+}: {
+    selectedEvents: string[]
+    selectedStatuses: string[]
+    selectedBarangayIds: string[]
+    range: { from?: Date; to?: Date } | undefined
+}) {
+    return {
+        types: selectedEvents.length ? selectedEvents : undefined,
+        statuses: selectedStatuses.length ? selectedStatuses : undefined,
+        barangayIds: selectedBarangayIds.length
+            ? selectedBarangayIds
+            : undefined,
+        from: range?.from?.toISOString(),
+        to: range?.to?.toISOString(),
+    }
+}
+
+function filterClustersInView(
+    cached: [unknown, unknown][],
+    incoming: ClusterFeature[],
+    bounds: Leaflet.LatLngBounds
+) {
+    const deduped = deduplicateClusters(cached)
+    const visibleBounds = bounds.pad(VISIBLE_PADDING_FACTOR)
+    const incomingKeys = new Set(incoming.map(getClusterKey))
+
+    return deduped.filter((cluster) => {
+        const [lng, lat] = cluster.geometry.coordinates
+        const key = getClusterKey(cluster)
+
+        return (
+            visibleBounds.contains(Leaflet.latLng(lat, lng)) &&
+            incomingKeys.has(key)
+        )
+    })
 }
 
 /*
