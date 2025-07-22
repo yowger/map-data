@@ -1,6 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { useEffect, useRef, useState } from "react"
-import type { DateRange } from "react-day-picker"
+import { useEffect, useRef } from "react"
 
 import { useGetBarangays } from "../api/useGetBarangay"
 import { BarangayFilterDropdown } from "../components/map/BarangayFilter"
@@ -11,6 +10,7 @@ import { StatusFilterDropdown } from "../components/map/StatusFilter"
 import { usePaginatedReports } from "../api/usePaginatedReports"
 import TextInput from "../components/ui/TextInput"
 import XScrollWrapper from "../components/ui/XScrollWrapper"
+import { useFilterContext } from "../hooks/useFilterContext"
 
 const HAZARD_OPTIONS = [
     "Flood",
@@ -30,10 +30,16 @@ const LIST_ITEM_HEIGHT = 150
 const ITEM_PER_PAGE = 20
 
 export default function Sidebar() {
-    const [range, setRange] = useState<DateRange | undefined>()
-    const [selectedEvents, setSelectedEvents] = useState<string[]>([])
-    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
-    const [selectedBarangayIds, setSelectedBarangayIds] = useState<string[]>([])
+    const {
+        range,
+        setRange,
+        selectedEvents,
+        setSelectedEvents,
+        selectedStatuses,
+        setSelectedStatuses,
+        selectedBarangayIds,
+        setSelectedBarangayIds,
+    } = useFilterContext()
 
     const parentRef = useRef<HTMLDivElement>(null)
 
@@ -103,6 +109,7 @@ export default function Sidebar() {
                     onChange={(newRange) => {
                         setRange(newRange)
                     }}
+                    onClear={() => setRange(undefined)}
                 />
             </div>
 

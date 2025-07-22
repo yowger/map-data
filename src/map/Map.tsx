@@ -1,5 +1,5 @@
 import Leaflet, { type StyleFunction } from "leaflet"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import {
     MapContainer,
     TileLayer,
@@ -16,20 +16,20 @@ import type {
     BarangayGeoJSON,
     ClusterFeature,
 } from "../types/map"
-import type { MapReport } from "../types/reports"
 
 interface MapProps {
     clusters?: ClusterFeature[]
     selectedBarangay: BarangayFeature | null
     barangays: BarangayGeoJSON
-    reports?: MapReport[]
     OnMoveEnd?: (map: Leaflet.Map) => void
+    OnReady?: (map: Leaflet.Map) => void
 }
 
 export default function Map({
     barangays,
     clusters,
     selectedBarangay,
+    OnReady,
     OnMoveEnd,
 }: MapProps) {
     const geoJsonStyle: StyleFunction<BarangayFeature["properties"]> = (
@@ -73,8 +73,27 @@ export default function Map({
             <MapEvents onMoveEnd={OnMoveEnd} />
             {selectedBarangay && <ZoomToBarangay feature={selectedBarangay} />}
             <ClusterLayer clusters={clusters ?? []} />
+            <MapReady onReady={OnReady} />
         </MapContainer>
     )
+}
+
+function MapReady({ onReady }: { onReady?: (map: Leaflet.Map) => void }) {
+    const map = useMap()
+    const hasFiredRef = useRef(false)
+
+    useEffect(() => {
+        if (!onReady || hasFiredRef.current) return
+
+        map.whenReady(() => {
+            if (!hasFiredRef.current) {
+                onReady(map)
+                hasFiredRef.current = true
+            }
+        })
+    }, [map, onReady])
+
+    return null
 }
 
 function FitBoundsToGeoJSON({

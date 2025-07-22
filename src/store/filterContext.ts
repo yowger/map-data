@@ -1,6 +1,5 @@
-import  { createContext } from "react"
-
-export type DateRange = { from: Date | null; to: Date | null }
+import { createContext } from "react"
+import type { DateRange } from "react-day-picker"
 
 export type FilterContextType = {
     range: DateRange | undefined
@@ -13,6 +12,4 @@ export type FilterContextType = {
     setSelectedBarangayIds: (b: string[]) => void
 }
 
-export const FilterContext = createContext<FilterContextType | undefined>(
-    undefined
-)
+export const FilterContext = createContext<FilterContextType | null>(null)

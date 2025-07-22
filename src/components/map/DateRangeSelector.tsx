@@ -9,11 +9,18 @@ import PopOver from "../ui/PopOver"
 type Props = {
     range: DateRange | undefined
     onChange?: (range: DateRange | undefined) => void
+    onClear?: () => void
+    onDone?: () => void
 }
 
 const DEFAULT_TEXT = "Select date"
 
-export default function DateRangeSelector({ range, onChange }: Props) {
+export default function DateRangeSelector({
+    range,
+    onChange,
+    onClear,
+    onDone,
+}: Props) {
     const [open, setOpen] = useState(false)
 
     const formattedRange = formatRange(range)
@@ -54,6 +61,24 @@ export default function DateRangeSelector({ range, onChange }: Props) {
                         }}
                     />
                 </PopOver.Body>
+
+                <PopOver.Footer className="flex justify-end gap-2">
+                    <button
+                        className="text-sm px-2 py-1 cursor-pointer font-medium text-gray-700"
+                        onClick={onClear}
+                    >
+                        Clear
+                    </button>
+
+                    <PopOver.Close>
+                        <button
+                            className="text-sm px-2 py-1 cursor-pointer font-medium text-blue-500"
+                            onClick={onDone}
+                        >
+                            Done
+                        </button>
+                    </PopOver.Close>
+                </PopOver.Footer>
             </PopOver.Content>
         </PopOver>
     )

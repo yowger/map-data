@@ -56,6 +56,7 @@ export function ReportCard({ report }: ReportCardProps) {
                                             src={report.imageUrls[0]}
                                             alt={`${report.title} thumbnail`}
                                             className="w-full h-full object-cover rounded-md"
+                                            loading="lazy"
                                         />
 
                                         {report.imageUrls.length > 1 && (
